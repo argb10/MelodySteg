@@ -66,12 +66,22 @@ def emisor():
     #example msg--> mensaje = "hey you!"
     entrada = input("Escribe el mensaje a codificar: ")
 
+    print("\nElige un instrumento (0-127):")
+    print("0  - Piano")
+    print("32 - Guitarra")
+    print("46 - Pizzicato strings")
+    print("69 - Oboe")
+    print("123- Tweet")
+    
+    instr = int(input("escribe el número del instrumento: "))
+
     clave, compases = generar_clave_compas(entrada)
     a,b = clave
     print(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")
 
     melodia = crear_melodia(entrada, clave, compases)
-    exportar_melodia_a_midi(melodia,bpm=60, instrumento=0)
+    exportar_melodia_a_midi(melodia,bpm=60, instrumento=instr)
+
     convertir_midi_a_wav("mensaje.mid", "mensaje.wav", "/usr/share/sounds/sf2/FluidR3_GM.sf2")
 
     with open("claves.txt", "w") as f:
