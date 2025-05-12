@@ -104,10 +104,6 @@ def obtener_melodia(frecuencias_encontradas):
 
 
 
-# Este bloque detecta el compás estimado por cada nota detectada
-# Basado en su tiempo de aparición en el audio
-
-# duracion_nota debe ser la misma que usaste al codificar (ej: 0.7 s)
 def buscar_compases(picos, paso, tasa_muestreo, duracion_nota):
     compases_detectados = [
         int((pico * paso / tasa_muestreo) // duracion_nota)
