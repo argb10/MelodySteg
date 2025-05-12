@@ -2,7 +2,23 @@ import numpy as np
 from math import gcd
 from typing import Tuple
 
-FREQS = np.array([261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25])  # C4 a C5
+from utils_midi import frec_a_midi
+
+#FREQS = np.array([261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25])  # C4 a C5
+escalas_midi = {
+    'C': [60, 62, 64, 65, 67, 69, 71, 72],
+    'C#': [61, 63, 65, 66, 68, 70, 72, 73],
+    'D': [62, 64, 66, 67, 69, 71, 73, 74],
+    'D#': [63, 65, 67, 68, 70, 72, 74, 75],
+    'E': [64, 66, 68, 69, 71, 73, 75, 76],
+    'F': [65, 67, 69, 70, 72, 74, 76, 77],
+    'F#': [66, 68, 70, 71, 73, 75, 77, 78],
+    'G': [67, 69, 71, 72, 74, 76, 78, 79],
+    'G#': [68, 70, 72, 73, 75, 77, 79, 80],
+    'A': [69, 71, 73, 74, 76, 78, 80, 81],
+    'A#': [70, 72, 74, 75, 77, 79, 81, 82],
+    'B': [71, 73, 75, 76, 78, 80, 82, 83]
+}
 
 def generar_clave_compas(texto: str) -> Tuple[Tuple[int, int], int]:
     notas_necesarias = len(texto) * 3
@@ -44,16 +60,23 @@ def nota_en_compas(idx, clave, compases):
     #print(f"[nota_en_compas] Nota idx {idx} -> Compás: {compas}")
     return compas
 
-def crear_melodia(texto, clave, compases):
+def crear_melodia(texto, clave, compases, tonalidad='C'):
     #print(f"[generar_melodia_con_mensaje] generando melodía para: '{texto}' con clave {clave}")
     indices = codificar_texto_a_indices(texto)
     melodia = []
 
+    escala = escalas_midi.get(tonalidad.upper(), escalas_midi['C'])
+    # for i, idx in enumerate(indices):
+    #     freq = FREQS[idx]
+    #     compas = nota_en_compas(i, clave, compases)
+    #     melodia.append((i, freq, compas))
+    #     #print(f"[generar_melodia_con_mensaje] i={i}, index={idx} -> freq={freq} Hz, compás={compas}")
+
     for i, idx in enumerate(indices):
-        freq = FREQS[idx]
+        nota_midi = escala[idx]
+        frec = frec_a_midi(nota_midi)
         compas = nota_en_compas(i, clave, compases)
-        melodia.append((i, freq, compas))
-        #print(f"[generar_melodia_con_mensaje] i={i}, index={idx} -> freq={freq} Hz, compás={compas}")
+        melodia.append((i, frec, compas))
 
     #print(f"[generar_melodia_con_mensaje] melodia creada con {len(melodia)} notas.")
     return melodia
