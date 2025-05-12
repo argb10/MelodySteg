@@ -2,12 +2,8 @@ import numpy as np
 from math import gcd
 from typing import Tuple
 
-
-# ==== FRECUENCIAS 
 FREQS = np.array([261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25])  # C4 a C5
 
-
-# ==== GENERADOR DE CLAVE Y N COMPASES
 def generar_clave_compas(texto: str) -> Tuple[Tuple[int, int], int]:
     notas_necesarias = len(texto) * 3
     compases = notas_necesarias

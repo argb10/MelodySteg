@@ -1,13 +1,50 @@
 #!/usr/bin/env python3
 import os
 os.system("clear")
+
+import argparse
+import sys
 import numpy as np
 #import IPython.display as ipd
+
 from scipy.signal import find_peaks
 from utils_midi import exportar_melodia_a_midi
 from utils_coder import generar_clave_compas, crear_melodia, imprimir_melodia
 from utils_audio import convertir_midi_a_wav
 from utils_decoder import cargar_audio, calcular_energia, detectar_frecs, obtener_melodia, buscar_compases, decode
+from graficos import calcular_fft, calcular_stft
+
+#funcion para validar clave del receptor
+def validar_entrada(entrada):
+    while True:
+        respuesta = input(entrada).strip()
+        if respuesta.lower()== "salir":
+            print("Saliendo de la aplicación...")
+            sys.exit(0)
+        if respuesta.isdigit():
+            return int(respuesta)
+        print("Entrada no válida, debe ser un entero.")
+
+def help():
+    print("""
+
+Uso:
+    python3 main.py --modo emisor/receptor
+
+Modo emisor:
+    - Introduce un mensaje desde la terminal.
+    - El programa codificará el mensaje y generará 'mensaje.wav'.
+    - También generará 'clave_para_receptor.txt' con los parámetros: clave(a,b) y compás para decodificar.
+
+Modo receptor:
+    - Recibe el archivo 'mensaje.wav' y 'clave_para_receptor.txt'.
+    - El programa pedirá que ingreses los valores de clave y selecciones el .WAV para decodificar el mensaje.
+
+Requisitos:
+    - Python 3
+    - Instalar dependencias: pip install -r requirements.txt
+
+""")
 
 
 def banner():
@@ -20,59 +57,82 @@ ___  ___     _           _       _____ _
 \_|  |_/\___|_|\___/ \__,_|\__, \____/ \__\___|\__, |
                             __/ |               __/ |
                            |___/               |___/                                                                          
-Hide messages using audio                                                     
+Hide messages using audio   
+python3 main.py --help muestra guía de uso
+                --modo emisor/receptor
     ''')
 
-def main():
-    banner()
+def emisor():
     #example msg--> mensaje = "hey you!"
-    msj = input("Escribe el mensaje: ")
+    entrada = input("Escribe el mensaje a codificar: ")
 
+    clave, compases = generar_clave_compas(entrada)
+    a,b = clave
+    print(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")
 
-    clave, compases = generar_clave_compas(msj)
-    a, b = clave
-    print(f"\nClave generada: a = {a}, b = {b}, compases = {compases}\n")
-
-    melodia_codificada = crear_melodia(msj, clave, compases)
-    #imprimir_melodia(melodia_codificada)
-
-
-    exportar_melodia_a_midi(melodia_codificada, bpm=60, instrumento=0)
-
+    melodia = crear_melodia(entrada, clave, compases)
+    exportar_melodia_a_midi(melodia,bpm=60, instrumento=0)
     convertir_midi_a_wav("mensaje.mid", "mensaje.wav", "/usr/share/sounds/sf2/FluidR3_GM.sf2")
 
-
-
-
-# ==== RECEPTOR funcionalidad
-    print("- RECEPTOR -")
-    a = int(input("Introduce clave 'a': "))
-    b = int(input("Introduce clave 'b': "))
-    compases = int(input("Introduce el total de compases: "))
-    clave_receptor = (a, b)
-
+    with open("claves.txt", "w") as f:
+        f.write(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")
     
-    # cargar el wav
-    #ruta = "mensaje.wav"
-    ruta = input("Introduce la ruta del archivo .wav recibido: ").strip()
+    print("Archivos creados: mensaje.wav y claves.txt")
 
+def receptor():
+    print("Introduce a continuación la clave para decodificar el mensaje")
+
+    a =validar_entrada("Clave a: ")
+    b =validar_entrada("Clave b: ")
+    compases = validar_entrada("Numero de compases: ")
+
+    ruta = input("Ruta del archivo .wav: ").strip()
+
+    clave = (a,b)
     y, sr, audio = cargar_audio(ruta)
 
-    energia, tiempos = calcular_energia(audio, sr)
+        # buscar las frecuencias
+    energia, _ = calcular_energia(audio, sr)
+    picos, _  = find_peaks(energia, height=np.max(energia)*0.3, distance=int(0.4/0.01))
+    frecs = detectar_frecs(audio, picos, duracion_nota=0.7, tasa_muestreo=sr)
+    melodia=obtener_melodia(frecs)
+    compases_encontrados= buscar_compases(picos, paso=int(0.01*sr), tasa_muestreo=sr, duracion_nota=0.7)
 
-    
-    # buscar frecuencias
-    picos, _ = find_peaks(energia, height=np.max(energia)*0.3, distance=int(0.4 / 0.01))
-    frecs_encontradas = detectar_frecs(audio, picos, duracion_nota=0.7, tasa_muestreo=sr)
+    msj_final = decode(clave, compases, compases_encontrados, melodia)
+    print(f"Mensaje decodificado: {msj_final}")
 
-    # obtener la melodia
-    melodia_detectada = obtener_melodia(frecs_encontradas)
 
-    compases_detectados = buscar_compases(picos, paso=int(0.01 * sr), tasa_muestreo=sr, duracion_nota=0.7)
+def main():
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('--modo', choices=['emisor','receptor'])
+    parser.add_argument('--help', action='store_true')
+    args = parser.parse_args()
 
-    # decodificar
-    msj_decodificado = decode(clave_receptor, compases, compases_detectados, melodia_detectada)
-    print(f"Mensaje decodificado: {msj_decodificado}")
+    banner()
+
+    if args.help : help()
+
+    #si se elige el modo directamente:
+    if args.modo:
+        if args.modo == 'emisor': emisor()
+        elif args.modo == 'receptor': receptor()
+        return
+
+    while True:
+        modo = input("\nSelecciona una modalidad para continuar (emisor/receptor) o 'salir': ").strip().lower()
+        
+        if modo == 'emisor':
+           emisor()
+           break
+        elif modo == 'receptor':
+           receptor()
+           break
+        elif modo == "salir":
+            print("Saliendo de la aplicación...")
+            sys.exit(0)
+        else:
+            print("Entrada no válida. Escribe si eres 'emisor/receptor' o 'salir'. ")
+            
 
 if __name__ == "__main__":
     main()

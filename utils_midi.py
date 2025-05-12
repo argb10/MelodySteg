@@ -7,7 +7,8 @@ def frec_a_midi(freq):
 
 def exportar_melodia_a_midi(melodia, nombre_archivo="mensaje.mid", bpm=60, instrumento=0):
     ''' guarda el mensaje en un midi file'''
-    mid = MidiFile(ticks_per_beat=480)
+    mid = MidiFile(ticks_per_beat=480) # negra = 1 segundo si BPM = 60
+
     track = MidiTrack()
     mid.tracks.append(track)
 
@@ -15,7 +16,7 @@ def exportar_melodia_a_midi(melodia, nombre_archivo="mensaje.mid", bpm=60, instr
     track.append(Message('program_change', program=instrumento, time=0))
     track.append(MetaMessage('set_tempo', tempo=bpm2tempo(bpm), time=0))
 
-    duracion_ticks = 480  # negra = 1 segundo si BPM = 60
+    duracion_ticks = 240  # corchea, 0.5 sg por nota
 
     for i, freq, compas in melodia:
         nota_midi = frec_a_midi(freq)

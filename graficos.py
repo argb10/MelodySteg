@@ -1,3 +1,6 @@
+import numpy as np  
+import librosa
+#faltar mostrar los plot show()
 def calcular_fft(y, sr):
     fft_dom = np.fft.rfft(y)
     freqs_vect = np.fft.rfftfreq(len(y), d=1/sr)

@@ -17,10 +17,12 @@ def cargar_audio(ruta_archivo):
 
     if len(datos.shape) == 2:
         datos = datos[:, 0]
+
     audio = datos / np.max(np.abs(datos)) # normalizar los datos
     
     return y, sr, audio
 
+# ==== FUNCIONES DECODIFICACION 
 def calcular_energia(audio, tasa_muestreo): 
     ventana = int(0.05 * tasa_muestreo)
     paso = int(0.01 * tasa_muestreo)
@@ -34,7 +36,7 @@ def frec_a_indx(f, tolerancia=5.0):
     dif = np.abs(FREQS - f)
     indice = np.argmin(dif)
 
-    if dif[indice] <= tolerancia:#si encuentra freq
+    if dif[indice] <= tolerancia:#si encuentra frec
         return indice
     else:
         return None
@@ -44,7 +46,7 @@ def inverso(a, m):
     for x in range(1, m):
         if (a * x) % m == 1:
             return x
-    raise ValueError(f"no encontró el inverso mod")
+    raise ValueError(f"no se encontró el inverso mod")
 
 def recuperar_msg_con_indx(indices_ordenados):
   #reordenar los idx
@@ -131,15 +133,6 @@ def decode(clave, compases, compases_detectados, melodia_detectada):
     mensaje = recuperar_msg_con_indx(indices_ordenados) # recuperar msg
     return mensaje
 
-
-
-
-
-
-# clave = (5, 104)  # 21 abril
-# compases = 27
-# a, b = clave
-# a_inv = inverso(a, compases)
 
 
 # print("frame rate:", file.getframerate())  # 44100
