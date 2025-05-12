@@ -12,7 +12,7 @@ from utils_midi import exportar_melodia_a_midi
 from utils_coder import generar_clave_compas, crear_melodia, imprimir_melodia
 from utils_audio import convertir_midi_a_wav
 from utils_decoder import cargar_audio, calcular_energia, detectar_frecs, obtener_melodia, buscar_compases, decode
-from graficos import calcular_fft, calcular_stft
+
 
 #funcion para validar clave del receptor
 def validar_entrada(entrada):

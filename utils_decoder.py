@@ -1,5 +1,4 @@
 from scipy.fft import rfft, rfftfreq
-from scipy.signal import find_peaks
 from scipy.io import wavfile
 from utils_coder import FREQS
 import numpy as np
