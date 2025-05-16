@@ -13,6 +13,8 @@ Utiliza un esquema de codificación para convertir el texto en frecuencias de au
 3. Recepción: El receptor decodifica las frecuencias de vuelta al texto, habiendo obtenido previamente una  clave (a,b) y el numero de compases generados.
 4. Visualización: Incluye gráficos y espectrograma que permiten analizar el wav generado. La salida del programa devuelve el mensaje decodificado al receptor.
 
-# Requirements
+# Requisitos
     
     pip install -r requirements.txt
+
+requiere que el programa externo 'fluidsynth' esté instalado -> apt-get install fluidsynth
