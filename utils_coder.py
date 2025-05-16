@@ -5,14 +5,16 @@ from typing import Tuple
 FREQS = np.array([261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25])  # C4 a C5
 
 def generar_clave_compas(texto: str) -> Tuple[Tuple[int, int], int]:
-    notas_necesarias = len(texto) * 3
-    compases = notas_necesarias
-    posibles_a = [a for a in range(2, compases) if gcd(a, compases) == 1]
+    compases = len(texto) * 3
+    valores_a =[]
+    for a in range(2, compases):
+        if gcd(a,compases)==1: valores_a.append(a)
+    #valores_a = [a for a in range(2, compases) if gcd(a, compases) == 1]
 
-    if not posibles_a:
-        raise ValueError(f"No se encontro ningun valor 'a' coprimo con {compases}.")
+    if not valores_a:
+        raise ValueError(f"No se ha encontrado ningun valor 'a' coprimo con {compases}.")
 
-    a = posibles_a[0]
+    a = valores_a[0]
     b = ord(texto[0])  #valor ASCII del primer char del txto
     clave = (a, b)
 
