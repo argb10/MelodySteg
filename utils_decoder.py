@@ -21,7 +21,7 @@ def cargar_audio(ruta_archivo):
     
     return y, sr, audio
 
-# ==== FUNCIONES DECODIFICACION 
+# FUNCIONES DECODIFICACION 
 def calcular_energia(audio, tasa_muestreo): 
     ventana = int(0.05 * tasa_muestreo)
     paso = int(0.01 * tasa_muestreo)
@@ -69,7 +69,7 @@ def recuperar_msg_con_indx(indices_ordenados):
 def detectar_frecs(audio, picos, duracion_nota, tasa_muestreo):
     # busca las frec dominantes en los picos de energía
     samples_nota = int(duracion_nota * tasa_muestreo)
-    frecuencias_encontradas = []
+    frecs_encontradas = []
 
     for pico in picos:
         inicio = pico * int(0.01 * tasa_muestreo)
@@ -81,19 +81,19 @@ def detectar_frecs(audio, picos, duracion_nota, tasa_muestreo):
         espectro = np.abs(rfft(señal))
         freqs = rfftfreq(len(señal), 1 / tasa_muestreo)
         freq_dominante = freqs[np.argmax(espectro)]
-        frecuencias_encontradas.append(freq_dominante)
+        frecs_encontradas.append(freq_dominante)
 
-    return frecuencias_encontradas
+    return frecs_encontradas
 
-def obtener_melodia(frecuencias_encontradas):
-    frecuencias_filtradas = [] 
-    for f in frecuencias_encontradas:
-        if abs(f) > 30 and abs(f ) > 30:
-            frecuencias_filtradas.append(f)
+def obtener_melodia(frecs_encontradas):
+    frecs_filtradas = [] 
+    for f in frecs_encontradas:
+        if abs(f ) > 30:
+            frecs_filtradas.append(f)
 
     melodia_detectada = []
 
-    for f in frecuencias_filtradas:
+    for f in frecs_filtradas:
         idx = frec_a_indx(f) # mapeo los indices con las freqs encontradas
 
         if idx is not None:
@@ -106,12 +106,14 @@ def obtener_melodia(frecuencias_encontradas):
 # Este bloque detecta el compás estimado por cada nota detectada
 # Basado en su tiempo de aparición en el audio
 
-# duracion_nota debe ser la misma que usas al codificar (0.7 s)
+# duración_nota debe ser la misma que se usó al codificar (0.7 s)
 def buscar_compases(picos, paso, tasa_muestreo, duracion_nota):
-    compases_detectados = [
-        int((pico * paso / tasa_muestreo) // duracion_nota)
-        for pico in picos
-    ]
+    compases_detectados = []
+    for pico in picos:
+        pico_a_seg = (pico *paso)/tasa_muestreo
+        compas = int(pico_a_seg // duracion_nota)
+        compases_detectados.append(compas)
+    
     return compases_detectados
 
 
