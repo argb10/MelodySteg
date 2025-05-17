@@ -10,7 +10,7 @@ import numpy as np
 from scipy.signal import find_peaks
 from utils_midi import exportar_melodia_a_midi
 from utils_coder import generar_clave_compas, crear_melodia, imprimir_melodia
-from utils_audio import convertir_midi_a_wav
+from utils_audio import midi_a_wav
 from utils_decoder import cargar_audio, calcular_energia, detectar_frecs, obtener_melodia, buscar_compases, decode
 
 
@@ -82,7 +82,7 @@ def emisor():
     melodia = crear_melodia(entrada, clave, compases)
     exportar_melodia_a_midi(melodia,bpm=60, instrumento=instr)
 
-    convertir_midi_a_wav("mensaje.mid", "mensaje.wav", "/usr/share/sounds/sf2/FluidR3_GM.sf2")
+    midi_a_wav("mensaje.mid", "mensaje.wav", "/usr/share/sounds/sf2/FluidR3_GM.sf2")
 
     with open("claves.txt", "w") as f:
         f.write(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")

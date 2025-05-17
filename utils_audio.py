@@ -1,7 +1,7 @@
 import subprocess
 import os
 
-def convertir_midi_a_wav(nombre_midi="mensaje.mid", nombre_wav="mensaje.wav", soundfont="/usr/share/sounds/sf2/FluidR3_GM.sf2"):
+def midi_a_wav(nombre_midi="mensaje.mid", nombre_wav="mensaje.wav", soundfont="/usr/share/sounds/sf2/FluidR3_GM.sf2"):
     comando = [
         "fluidsynth",
         "-ni",
