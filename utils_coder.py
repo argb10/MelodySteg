@@ -9,7 +9,6 @@ def generar_clave_compas(texto: str) -> Tuple[Tuple[int, int], int]:
     valores_a =[]
     for a in range(2, compases):
         if gcd(a,compases)==1: valores_a.append(a)
-    #valores_a = [a for a in range(2, compases) if gcd(a, compases) == 1]
 
     if not valores_a:
         raise ValueError(f"No se ha encontrado ningun valor 'a' coprimo con {compases}.")
@@ -26,18 +25,18 @@ def generar_clave_compas(texto: str) -> Tuple[Tuple[int, int], int]:
 
 # ==== FUNCIONES DE CODIFICACION 
 
-def char_a_indices(c):
+def char_a_idx(c):
     byte = ord(c)
     indices = [(byte >> 6) & 0b111, (byte >> 3) & 0b111, byte & 0b111]
-    #print(f"[char_a_indices] '{c}' -> byte: {byte:08b} -> indices: {indices}")
+    #print(f"[char_a_idx] '{c}' -> byte: {byte:08b} -> indices: {indices}")
     return indices
 
-def codificar_texto_a_indices(texto):
-    #print(f"[codificar_texto_a_indices] codificando texto...: '{texto}'")
+def txt_a_idx(texto):
+    #print(f"[txt_a_idx] codificando texto...: '{texto}'")
     indices = []
     for c in texto:
-        indices.extend(char_a_indices(c))
-    #print(f"[codificar_texto_a_indices] indices: {indices}")
+        indices.extend(char_a_idx(c))
+    #print(f"[txt_a_idx] indices: {indices}")
     return indices
 
 def nota_en_compas(idx, clave, compases):
@@ -48,7 +47,7 @@ def nota_en_compas(idx, clave, compases):
 
 def crear_melodia(texto, clave, compases):
     #print(f"[generar_melodia_con_mensaje] generando melodía para: '{texto}' con clave {clave}")
-    indices = codificar_texto_a_indices(texto)
+    indices = txt_a_idx(texto)
     melodia = []
 
     for i, idx in enumerate(indices):
