@@ -6,8 +6,4 @@ midi2audio
 matplotlib
 mido
 IPython 
-librosa
-pydub
-midi2audio
-mido
 fluidsynth

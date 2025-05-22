@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
-import os
-os.system("clear")
+#!p/usr/bin/env python3
+# import os
+# os.system("clear")
 
 import argparse
 import sys
@@ -9,7 +9,7 @@ import numpy as np
 
 from scipy.signal import find_peaks
 from utils_midi import exportar_melodia_a_midi
-from utils_coder import generar_clave_compas, crear_melodia, imprimir_melodia
+from utils_coder import kdf, crear_melodia, imprimir_melodia
 from utils_audio import midi_a_wav
 from utils_decoder import cargar_audio, calcular_energia, detectar_frecs, obtener_melodia, buscar_compases, decode
 
@@ -75,7 +75,8 @@ def emisor():
     
     instr = int(input("escribe el número del instrumento: "))
 
-    clave, compases = generar_clave_compas(entrada)
+    #clave, compases = generar_clave_compas(entrada)
+    clave, compases = kdf('clave123', entrada)
     a,b = clave
     print(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")
 
