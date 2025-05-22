@@ -7,7 +7,6 @@ import wave # for .wav format
 import os
 os.system("clear")
 
-
 #file = wave.open("mensaje.wav", "r") # rb = read binary
 def cargar_audio(ruta_archivo):
     tasa_muestreo, datos = wavfile.read(ruta_archivo)

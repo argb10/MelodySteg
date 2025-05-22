@@ -3,29 +3,9 @@ from math import gcd
 from typing import Tuple
 from hashlib import pbkdf2_hmac
 
-FREQS = np.array([261.63, 293.66, 329.63, 349.23, 392.00,
-                 440.00, 493.88, 523.25])  # C4 a C5
+FREQS = np.array([261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25])  # C4 a C5
 
 
-# def generar_clave_compas(texto: str) -> Tuple[Tuple[int, int], int]:
-#     compases = len(texto) * 3
-#     valores_a = []
-#     for a in range(2, compases):
-#         if gcd(a, compases) == 1:
-#             valores_a.append(a)
-
-#     if not valores_a:
-#         raise ValueError(
-#             f"No se ha encontrado ningun valor 'a' coprimo con {compases}.")
-
-#     a = valores_a[0]
-#     b = ord(texto[0])  # valor ASCII del primer char del txto
-#     clave = (a, b)
-
-#     # print(f"\nClave generada: a = {a}, b = {b}")
-#     # print(f" Número de compases: {compases} (3 por char)")
-
-#     return clave, compases
 def kdf(pw:str, txt:str) -> Tuple[Tuple[int, int], int]:
     compases = len(txt)*3
     v_aleatorio = b"melodia"
@@ -33,11 +13,10 @@ def kdf(pw:str, txt:str) -> Tuple[Tuple[int, int], int]:
 
     a = key[0]%compases #genero 'a'
     while gcd(a,compases)!= 1:
-        a = (a+1) % compases
-        if a == 0:
-            a= 1
+        a = (a+1) % compases or 1
+        
     
-    b = key[1]
+    b = key[1] #genero 'b'
     clave = (a,b)
     return clave, compases
 

@@ -65,7 +65,7 @@ python3 main.py --help muestra guía de uso
 def emisor():
     #example msg--> mensaje = "hey you!"
     entrada = input("Escribe el mensaje a codificar: ")
-
+    pw = input("Escribe tu contraseña: ")
     print("\nElige un instrumento (0-127):")
     print("0  - Piano")
     print("32 - Guitarra")
@@ -76,7 +76,7 @@ def emisor():
     instr = int(input("escribe el número del instrumento: "))
 
     #clave, compases = generar_clave_compas(entrada)
-    clave, compases = kdf('clave123', entrada)
+    clave, compases = kdf(pw, entrada)
     a,b = clave
     print(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")
 
