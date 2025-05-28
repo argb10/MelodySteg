@@ -18,4 +18,5 @@ Utiliza un esquema de codificación para convertir el texto en frecuencias de au
     pip install -r requirements.txt
 
 requiere que el programa externo 'fluidsynth' esté instalado -> apt-get install fluidsynth
+
 al igual que una soundfont ->  sudo apt install fluid-soundfont-gm
