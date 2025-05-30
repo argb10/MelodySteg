@@ -85,7 +85,7 @@ def emisor():
     midi_a_wav("mensaje.mid", "mensaje.wav", "/usr/share/sounds/sf2/FluidR3_GM.sf2")
 
     with open("claves.txt", "w") as f:
-        f.write(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")
+        f.write(f"\n Clave generada: a->{a}, b->{b}\n")
     
     print("Archivos creados: mensaje.wav y claves.txt")
 
