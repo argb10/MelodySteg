@@ -1,6 +1,5 @@
 #!p/usr/bin/env python3
-# import os
-# os.system("clear")
+
 
 import argparse
 import sys
@@ -34,7 +33,7 @@ Uso:
 Modo emisor:
     - Introduce un mensaje desde la terminal.
     - El programa codificará el mensaje y generará 'mensaje.wav'.
-    - También generará 'clave_para_receptor.txt' con los parámetros: clave(a,b) y compás para decodificar.
+    - También generará 'clave_para_receptor.txt' con los parámetros: clave(a,b) para decodificar.
 
 Modo receptor:
     - Recibe el archivo 'mensaje.wav' y 'clave_para_receptor.txt'.
@@ -48,7 +47,7 @@ Requisitos:
 
 
 def banner():
-    print('''     
+    print(r'''     
 ___  ___     _           _       _____ _             
 |  \/  |    | |         | |     /  ___| |            
 | .  . | ___| | ___   __| |_   _\ `--.| |_ ___  __ _ 
@@ -95,7 +94,8 @@ def receptor():
 
     a =validar_entrada("Clave a: ")
     b =validar_entrada("Clave b: ")
-    compases = validar_entrada("Numero de compases: ")
+    #compases = validar_entrada("Numero de compases: ")
+
 
     ruta = input("Ruta del archivo .wav: ").strip()
 
@@ -107,7 +107,9 @@ def receptor():
     picos, _  = find_peaks(energia, height=np.max(energia)*0.3, distance=int(0.4/0.01))
     frecs = detectar_frecs(audio, picos, duracion_nota=0.7, tasa_muestreo=sr)
     melodia=obtener_melodia(frecs)
+    
     compases_encontrados= buscar_compases(picos, paso=int(0.01*sr), tasa_muestreo=sr, duracion_nota=0.7)
+    compases = len(compases_encontrados)
 
     msj_final = decode(clave, compases, compases_encontrados, melodia)
     print(f"Mensaje decodificado: {msj_final}")

@@ -4,8 +4,8 @@ from utils_coder import FREQS
 import numpy as np
 import librosa
 import wave # for .wav format
-import os
-os.system("clear")
+# import os
+# os.system("clear")
 
 #file = wave.open("mensaje.wav", "r") # rb = read binary
 def cargar_audio(ruta_archivo):
