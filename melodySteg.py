@@ -41,7 +41,7 @@ Modo receptor:
 
 Requisitos:
     - Python 3
-    - Instalar dependencias: pip install -r requirements.txt
+    - Instalar dependencias: pip install -r requirements.txt y una sounfont
 
 """)
 
@@ -62,7 +62,7 @@ python3 main.py --help muestra guía de uso
     ''')
 
 def emisor():
-    #example msg--> mensaje = "hey you!"
+    
     entrada = input("Escribe el mensaje a codificar: ")
     pw = input("Escribe tu contraseña: ")
     print("\nElige un instrumento (0-127):")
@@ -90,7 +90,7 @@ def emisor():
     print("Archivos creados: mensaje.wav y claves.txt")
 
 def receptor():
-    print("Introduce a continuación la clave para decodificar el mensaje")
+    print("Clave para decodificar el mensaje")
 
     a =validar_entrada("Clave a: ")
     b =validar_entrada("Clave b: ")
@@ -132,7 +132,7 @@ def main():
         return
 
     while True:
-        modo = input("\nSelecciona una modalidad para continuar (emisor/receptor) o 'salir': ").strip().lower()
+        modo = input("\nSelecciona un modo para continuar (emisor/receptor) o 'salir': ").strip().lower()
         
         if modo == 'emisor':
            emisor()
