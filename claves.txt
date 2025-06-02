@@ -1,2 +1,2 @@
 
- Clave generada: a->2, b->97 y compases->15
+ Clave generada: a->7, b->101
