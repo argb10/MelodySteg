@@ -8,7 +8,7 @@ import numpy as np
 
 from scipy.signal import find_peaks
 from utils_midi import exportar_melodia_a_midi
-from utils_coder import kdf, crear_melodia, imprimir_melodia
+from utils_coder import kdf, crear_melodia, imprimir_melodia, mezclar_msj_arpegio
 from utils_audio import midi_a_wav
 from utils_decoder import cargar_audio, calcular_energia, detectar_frecs, obtener_melodia, buscar_compases, decode
 
@@ -62,7 +62,7 @@ python3 main.py --help muestra guía de uso
     ''')
 
 def emisor():
-    #example msg--> mensaje = "hey you!"
+    
     entrada = input("Escribe el mensaje a codificar: ")
     pw = input("Escribe tu contraseña: ")
     print("\nElige un instrumento (0-127):")
@@ -80,7 +80,8 @@ def emisor():
     print(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")
 
     melodia = crear_melodia(entrada, clave, compases)
-    exportar_melodia_a_midi(melodia,bpm=60, instrumento=instr)
+    mel_final = mezclar_msj_arpegio(melodia, compases)
+    exportar_melodia_a_midi(mel_final,bpm=60, instrumento=instr)
 
     midi_a_wav("mensaje.mid", "mensaje.wav", "/usr/share/sounds/sf2/FluidR3_GM.sf2")
 

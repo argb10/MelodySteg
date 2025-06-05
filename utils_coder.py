@@ -3,7 +3,28 @@ from math import gcd
 from typing import Tuple
 from hashlib import pbkdf2_hmac
 
-FREQS = np.array([261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25])  # C4 a C5
+FREQS = np.array([
+    220.00,   # Am pentatónica ampliada a 8 notas
+    261.63,   
+    293.66,   
+    329.63,   
+    392.00,   
+    440.00,   
+    523.25,   
+    587.33,   
+])
+
+# acordes I–V–vi–IV en Cmaj
+CHORD_NOTES = {
+    "C":  [261.63, 659.26, 392.00],   # C4, E3, G4
+    "G":  [196.00, 246.94, 392.00],   # G3, B3 (246.94), G4 (493.88)
+    "Am": [220.00, 523.25, 329.63],   # A3, C4 (659.26), E4
+    "F":  [174.61, 698.46, 523.25],   # F3, F4 (349.23), C5
+}
+PROGRESION = [
+    "C","G","Am","F","C","G",
+    "Am","F","C","G","Am","F","C","G","Am","F","C","G",
+]
 
 
 def kdf(pw:str, txt:str) -> Tuple[Tuple[int, int], int]:
@@ -20,7 +41,7 @@ def kdf(pw:str, txt:str) -> Tuple[Tuple[int, int], int]:
     clave = (a,b)
     return clave, compases
 
-# ==== FUNCIONES DE CODIFICACION
+# FUNCIONES DE CODIFICACION
 
 def char_a_idx(c):
     byte = ord(c)
@@ -45,24 +66,40 @@ def nota_en_compas(idx, clave, compases):
     return compas
 
 
-def crear_melodia(texto, clave, compases):
-    # print(f"[generar_melodia_con_mensaje] generando melodía para: '{texto}' con clave {clave}")
+def crear_melodia(texto, clave, compases): # se construye la melodia del msj
     indices = txt_a_idx(texto)
     melodia = []
 
     for i, idx in enumerate(indices):
-        freq = FREQS[idx]
+        freq = float(FREQS[idx])
         compas = nota_en_compas(i, clave, compases)
         melodia.append((i, freq, compas))
-        # print(f"[generar_melodia_con_mensaje] i={i}, index={idx} -> freq={freq} Hz, compás={compas}")
-
-    # print(f"[generar_melodia_con_mensaje] melodia creada con {len(melodia)} notas.")
+        
     return melodia
 
-# === VISUALIZAR 'PARTITURA'
+# funcion para mezclar con notas de relleno,
+# el beat 0 -> nota msj, los demás notas del acorde arpegiadas
+def mezclar_msj_arpegio(melodia: list, compases: int):
+
+    nota_por_compas = { compas: freq for (_, freq, compas) in melodia }
+    resultado = []
+
+    for k in range(compases):
+        freq_mensaje = nota_por_compas[k]
+        nombre_acorde = PROGRESION[k % len(PROGRESION)]
+        acorde = CHORD_NOTES[nombre_acorde]
+
+        for beat in range(4):
+            if beat == 0:
+                resultado.append((k, beat, freq_mensaje, True))
+            else:
+                freq_arpegio = acorde[beat - 1]
+                resultado.append((k, beat, float(freq_arpegio), False))
+
+    return resultado
 
 
-def imprimir_melodia(melodia):
+def imprimir_melodia(melodia): 
     print("\n melodia generada:")
     print(f"{'nota en Hz':>10} | {'compas':>6}")
     print("-" * 22)
