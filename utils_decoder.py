@@ -20,26 +20,26 @@ def cargar_audio(ruta_archivo):
     return y, sr, audio
 
 # FUNCIONES DECODIFICACION 
-def calcular_energia(audio, tasa_muestreo): 
+'''def calcular_energia(audio, tasa_muestreo): 
     ventana = int(0.05 * tasa_muestreo)
     paso = int(0.01 * tasa_muestreo)
 
     energia = [np.sum(audio[i:i+ventana]**2) for i in range(0, len(audio)-ventana, paso)] # energia en cada 'ventana'
     tiempos = np.arange(len(energia)) * paso / tasa_muestreo
     return energia, tiempos # tiempos correspondientes a cada punto de energía
-
+'''
 
 def frec_a_indx(f, tolerancia=5.0):
     dif = np.abs(FREQS - f)
     indice = np.argmin(dif)
 
-    if dif[indice] <= tolerancia:#si encuentra frec
+    if dif[indice] <= tolerancia:#si encuentra frec...
         return indice
     else:
         return None
 
 def inverso(a, m):
-#buscar el 'i' con el q se codifico la nota original
+#buscar el 'i' con el q se codificó la nota original
     for x in range(1, m):
         if (a * x) % m == 1:
             return x
@@ -64,8 +64,73 @@ def recuperar_msg_con_indx(indices_ordenados):
     return "".join(chars)
 
 
-def detectar_frecs(audio, picos, duracion_nota, tasa_muestreo):
-    # busca las frec dominantes en los picos de energía
+# funcion para encontrar onsets y extraer frec dominante
+
+def onsets_y_frecs(audio, sr, duracion_segmento=0.4):
+    y_librosa = librosa.util.normalize(audio)
+    onset_samples = librosa.onset.onset_detect(y=y_librosa, sr=sr, units='samples', backtrack=False)
+
+    frecs_detectadas = []
+    for onset in onset_samples:
+        inicio = int(onset)
+        fin = int(min(len(audio), onset + duracion_segmento * sr))
+        segmento = audio[inicio:fin]
+        if len(segmento) == 0:
+            frecs_detectadas.append(0.0)
+            continue
+        ventana_hann = segmento * np.hanning(len(segmento))
+        espec = np.abs(rfft(ventana_hann))
+        freqs = rfftfreq(len(ventana_hann), 1 / sr)
+        fdom = freqs[np.argmax(espec)]
+        frecs_detectadas.append(fdom)
+
+    return onset_samples, frecs_detectadas
+
+
+
+def decode(clave, compases, onsets, frecs_encontradas):
+    a, b = clave
+    a_inv = inverso(a, compases)
+
+    orden = np.argsort(onsets)
+    onsets_ord = np.array(onsets)[orden]
+    frecs_ord = np.array(frecs_encontradas)[orden]
+
+    total_onsets = compases * 4
+    onsets_ord = onsets_ord[:total_onsets]
+    frecs_ord = frecs_ord[:total_onsets]
+
+    #idx por idx original
+    lista_idx_i_original = []
+
+    for c in range (compases):
+        ini = c * 4
+        fin = ini + 4
+        frecs_compas = frecs_ord[ini:fin]
+
+        idx_original =  (a_inv *(c-b)) %compases
+        beat_esperado = int(idx_original % 4)
+        fdom = frecs_compas[beat_esperado]
+        idx = frec_a_indx(fdom)
+        if idx is not None:
+            lista_idx_i_original.append((idx_original, idx))
+
+    lista_idx_i_original.sort(key=lambda x: x[0])
+    indices_ordenados = [idx for (_, idx) in lista_idx_i_original]
+    return recuperar_msg_con_indx(indices_ordenados)
+
+
+
+
+
+
+
+
+
+
+'''
+def buscar_frecs(audio, picos, duracion_nota, tasa_muestreo):
+    # busca las frec dominantes 
     samples_nota = int(duracion_nota * tasa_muestreo)
     frecs_encontradas = []
 
@@ -99,8 +164,6 @@ def obtener_melodia(frecs_encontradas):
 
     return melodia_detectada
 
-
-
 # Este bloque detecta el compás estimado por cada nota detectada
 # Basado en su tiempo de aparición en el audio
 
@@ -116,24 +179,7 @@ def buscar_compases(picos, paso, tasa_muestreo, duracion_nota):
 
 
 # print("compases detectados desde los picos : ", compases_detectados)
-
-def decode(clave, compases, compases_detectados, melodia_detectada):
-    a, b = clave
-    a_inv = inverso(a, compases)
-
-    melodia_con_i = []
-    for compas_detectado, idx in zip(compases_detectados, melodia_detectada):
-        i_real = (a_inv * (compas_detectado - b)) % compases
-        melodia_con_i.append((i_real, idx))
-    # Ordenar por índice original
-    #melodia_con_i.sort()
-    indices_ordenados = [idx for _, idx in melodia_con_i]
-
-    mensaje = recuperar_msg_con_indx(indices_ordenados) # recuperar msg
-    return mensaje
-
-
-
+'''
 # print("frame rate:", file.getframerate())  # 44100
 # print("sample width:", file.getsampwidth()) # 2
 # print("number of frames:", file.getnframes())

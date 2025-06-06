@@ -8,9 +8,9 @@ import numpy as np
 
 from scipy.signal import find_peaks
 from utils_midi import exportar_melodia_a_midi
-from utils_coder import kdf, crear_melodia, imprimir_melodia, mezclar_msj_arpegio
+from utils_coder import kdf, crear_melodia, imprimir_melodia, mel_con_padding
 from utils_audio import midi_a_wav
-from utils_decoder import cargar_audio, calcular_energia, detectar_frecs, obtener_melodia, buscar_compases, decode
+from utils_decoder import cargar_audio,onsets_y_frecs, decode
 
 
 #funcion para validar clave del receptor
@@ -80,7 +80,7 @@ def emisor():
     print(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")
 
     melodia = crear_melodia(entrada, clave, compases)
-    mel_final = mezclar_msj_arpegio(melodia, compases)
+    mel_final = mel_con_padding(melodia, compases)
     exportar_melodia_a_midi(mel_final,bpm=60, instrumento=instr)
 
     midi_a_wav("mensaje.mid", "mensaje.wav", "/usr/share/sounds/sf2/FluidR3_GM.sf2")

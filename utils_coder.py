@@ -3,27 +3,18 @@ from math import gcd
 from typing import Tuple
 from hashlib import pbkdf2_hmac
 
-FREQS = np.array([
-    220.00,   # Am pentatónica ampliada a 8 notas
-    261.63,   
-    293.66,   
-    329.63,   
-    392.00,   
-    440.00,   
-    523.25,   
-    587.33,   
-])
+FREQS = np.array([220.00, 261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33]) # Am pentatónica ampliada a 8 notas
 
 # acordes I–V–vi–IV en Cmaj
-CHORD_NOTES = {
-    "C":  [261.63, 659.26, 392.00],   # C4, E3, G4
-    "G":  [196.00, 246.94, 392.00],   # G3, B3 (246.94), G4 (493.88)
-    "Am": [220.00, 523.25, 329.63],   # A3, C4 (659.26), E4
-    "F":  [174.61, 698.46, 523.25],   # F3, F4 (349.23), C5
+ACORDES = { "C":  [261.63, 329.63, 392.00],   # C4, E4, G4
+            "G":  [196.00, 246.94, 293.66],   # G3, B3, D4
+           "Am": [220.00, 261.63, 329.63],   # A3, C4/(523.25 Hz), E4
+            "F":  [174.61, 220.00, 130.81],   # F3, A3 (349.23 Hz), C3
+    
 }
 PROGRESION = [
-    "C","G","Am","F","C","G",
-    "Am","F","C","G","Am","F","C","G","Am","F","C","G",
+    "C","G","Am","F","C","G", # inicio
+    "Am","F","C","G","Am","F","C","G","Am","F","C","G" #desarrollo
 ]
 
 
@@ -46,23 +37,23 @@ def kdf(pw:str, txt:str) -> Tuple[Tuple[int, int], int]:
 def char_a_idx(c):
     byte = ord(c)
     indices = [(byte >> 6) & 0b111, (byte >> 3) & 0b111, byte & 0b111]
-    # print(f"[char_a_idx] '{c}' -> byte: {byte:08b} -> indices: {indices}")
+    # print(f"'{c}' -> byte: {byte:08b} -> indices: {indices}")
     return indices
 
 
 def txt_a_idx(texto):
-    # print(f"[txt_a_idx] codificando texto...: '{texto}'")
+    # print(f"codificando texto...: '{texto}'")
     indices = []
     for c in texto:
         indices.extend(char_a_idx(c))
-    # print(f"[txt_a_idx] indices: {indices}")
+    # print(f"indices: {indices}")
     return indices
 
 
 def nota_en_compas(idx, clave, compases):
     a, b = clave
     compas = (idx * a + b) % compases
-    # print(f"[nota_en_compas] Nota idx {idx} -> Compás: {compas}")
+    # print(f"Nota idx {idx} -> compas: {compas}")
     return compas
 
 
@@ -77,26 +68,29 @@ def crear_melodia(texto, clave, compases): # se construye la melodia del msj
         
     return melodia
 
-# funcion para mezclar con notas de relleno,
-# el beat 0 -> nota msj, los demás notas del acorde arpegiadas
-def mezclar_msj_arpegio(melodia: list, compases: int):
+#se unen melodia y notas de relleno
+def mel_con_padding(melodia, compases):
 
-    nota_por_compas = { compas: freq for (_, freq, compas) in melodia }
-    resultado = []
+    nota_por_compas = {}
+    for i, frec, compas in melodia:
+        nota_por_compas[compas] = (i, frec)
 
-    for k in range(compases):
-        freq_mensaje = nota_por_compas[k]
-        nombre_acorde = PROGRESION[k % len(PROGRESION)]
-        acorde = CHORD_NOTES[nombre_acorde]
+    rdo = []
+
+    for c in range(compases):
+        i, frec_msj  = nota_por_compas[c]
+        n_acorde = PROGRESION[ c % len(PROGRESION)]
+        acorde = ACORDES[n_acorde]
+        pos_msj = i % 4
 
         for beat in range(4):
-            if beat == 0:
-                resultado.append((k, beat, freq_mensaje, True))
+            if beat == pos_msj:
+                rdo.append((c, beat, frec_msj, True))
             else:
-                freq_arpegio = acorde[beat - 1]
-                resultado.append((k, beat, float(freq_arpegio), False))
+                frec_relleno = acorde[beat-1]
+                rdo.append((c, beat, float(frec_relleno), False))
+    return rdo
 
-    return resultado
 
 
 def imprimir_melodia(melodia): 
@@ -105,3 +99,5 @@ def imprimir_melodia(melodia):
     print("-" * 22)
     for i, freq, compas in melodia:
         print(f"{freq:>10.2f} | {compas:>6}")
+
+#LOG pruebas
