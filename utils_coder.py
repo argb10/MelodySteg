@@ -90,12 +90,21 @@ def mel_con_padding(melodia, compases, clave):
         acorde = ACORDES[n_acorde]
         pos_msj = beat_random(i, clave)
 
+        relleno_idx = 0 
+
+
         for beat in range(4):
             if beat == pos_msj:
+                 # LOG:
+                print(f"compas {c}, beat {beat} → nota msj i={i}, frec={frec_msj:.2f} Hz")
+          
                 rdo.append((c, beat, frec_msj, True))
             else:
-                frec_relleno = acorde[beat-1]
+                frec_relleno = acorde[relleno_idx % len(acorde)] #notas acorde en orden
+                print(f"compás {c}, beat {beat} → nota relleno i={i}, frec={frec_relleno:.2f} Hz")
+          
                 rdo.append((c, beat, float(frec_relleno), False))
+                relleno_idx+=1
     return rdo
 
 
