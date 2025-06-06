@@ -95,7 +95,7 @@ def receptor():
 
     a =validar_entrada("Clave a: ")
     b =validar_entrada("Clave b: ")
-    #compases = validar_entrada("Numero de compases: ")
+    #compases = validar_entrada("compases: ")
 
 
     ruta = input("Ruta del archivo .wav: ").strip()
@@ -103,16 +103,19 @@ def receptor():
     clave = (a,b)
     y, sr, audio = cargar_audio(ruta)
 
-        # buscar las frecuencias
-    energia, _ = calcular_energia(audio, sr)
-    picos, _  = find_peaks(energia, height=np.max(energia)*0.3, distance=int(0.4/0.01))
-    frecs = detectar_frecs(audio, picos, duracion_nota=0.7, tasa_muestreo=sr)
-    melodia=obtener_melodia(frecs)
-    
-    compases_encontrados= buscar_compases(picos, paso=int(0.01*sr), tasa_muestreo=sr, duracion_nota=0.7)
-    compases = len(compases_encontrados)
+    onsets, frecs = onsets_y_frecs(audio, sr)
+    compases = len(onsets)//4  # num de compases aprox
 
-    msj_final = decode(clave, compases, compases_encontrados, melodia)
+    #     # buscar las frecuencias
+    # energia, _ = calcular_energia(audio, sr)
+    # picos, _  = find_peaks(energia, height=np.max(energia)*0.3, distance=int(0.4/0.01))
+    # frecs = detectar_frecs(audio, picos, duracion_nota=0.7, tasa_muestreo=sr)
+    # melodia=obtener_melodia(frecs)
+    
+    # compases_encontrados= buscar_compases(picos, paso=int(0.01*sr), tasa_muestreo=sr, duracion_nota=0.7)
+    # compases = len(compases_encontrados)
+
+    msj_final = decode(clave, compases, onsets, frecs)
     print(f"Mensaje decodificado: {msj_final}")
 
 
