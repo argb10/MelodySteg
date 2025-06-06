@@ -64,7 +64,7 @@ python3 main.py --help muestra guía de uso
 def emisor():
     
     entrada = input("Escribe el mensaje a codificar: ")
-    pw = input("Escribe tu contraseña: ")
+    pw = input("Escribe una contraseña: ")
     print("\nElige un instrumento (0-127):")
     print("0  - Piano")
     print("32 - Guitarra")
