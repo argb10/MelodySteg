@@ -4,7 +4,7 @@ from utils_coder import FREQS
 import numpy as np
 import librosa
 import wave # for .wav format
-
+from utils_coder import beat_random
 
 #file = wave.open("mensaje.wav", "r") # rb = read binary
 def cargar_audio(ruta_archivo):
@@ -109,7 +109,7 @@ def decode(clave, compases, onsets, frecs_encontradas):
         frecs_compas = frecs_ord[ini:fin]
 
         idx_original =  (a_inv *(c-b)) %compases
-        beat_esperado = int(idx_original % 4)
+        beat_esperado = beat_random(idx_original, clave)
         fdom = frecs_compas[beat_esperado]
         idx = frec_a_indx(fdom)
         if idx is not None:

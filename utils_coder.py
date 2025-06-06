@@ -1,4 +1,5 @@
 import numpy as np
+import random
 from math import gcd
 from typing import Tuple
 from hashlib import pbkdf2_hmac
@@ -56,6 +57,12 @@ def nota_en_compas(idx, clave, compases):
     # print(f"Nota idx {idx} -> compas: {compas}")
     return compas
 
+def beat_random(i, clave): # da un n aleatorio a partir de la clave
+
+    a, b = clave
+    seed = (a * 1000 + b) * (i + 1)
+    random.seed(seed) # reinicia random 
+    return random.randint(0, 3) # posicion aleatoria
 
 def crear_melodia(texto, clave, compases): # se construye la melodia del msj
     indices = txt_a_idx(texto)
@@ -69,7 +76,7 @@ def crear_melodia(texto, clave, compases): # se construye la melodia del msj
     return melodia
 
 #se unen melodia y notas de relleno
-def mel_con_padding(melodia, compases):
+def mel_con_padding(melodia, compases, clave):
 
     nota_por_compas = {}
     for i, frec, compas in melodia:
@@ -81,7 +88,7 @@ def mel_con_padding(melodia, compases):
         i, frec_msj  = nota_por_compas[c]
         n_acorde = PROGRESION[ c % len(PROGRESION)]
         acorde = ACORDES[n_acorde]
-        pos_msj = i % 4
+        pos_msj = beat_random(i, clave)
 
         for beat in range(4):
             if beat == pos_msj:
@@ -101,3 +108,23 @@ def imprimir_melodia(melodia):
         print(f"{freq:>10.2f} | {compas:>6}")
 
 #LOG pruebas
+def log_dispersión(texto: str, melodia: list, m_final: list):
+  
+    compas_a_beat = {
+        comp: beat
+        for (comp, beat, freq, es_msg) in m_final
+        if es_msg
+    }
+
+    print("LOG DE DISPERSIÓN DE NOTAS:\n")
+    for char_idx, c in enumerate(texto):
+        i1, i2, i3 = 3*char_idx, 3*char_idx+1, 3*char_idx+2
+        detalles = []
+        for i, freq, compas in melodia:
+            if i in (i1, i2, i3):
+                beat = compas_a_beat.get(compas)
+                detalles.append((i, compas, beat))
+        print(f"'{c}':")
+        for (i, comp, beat) in sorted(detalles, key=lambda x: x[0]):
+            print(f" i={i} -- compas {comp}, beat {beat}")
+        print()
