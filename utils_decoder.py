@@ -110,8 +110,8 @@ def decode(clave, compases, onsets, frecs_encontradas):
 
         i_original =  (a_inv *(c-b)) %compases
         beat_msj= beat_random(i_original, clave)
-        fdom = frecs_compas[beat_msj]
-        idx= frec_a_indx(fdom)
+        f_msj = frecs_compas[beat_msj]
+        idx= frec_a_indx(f_msj)
         if idx is not None:
             idx_msj.append((i_original, idx))
 
