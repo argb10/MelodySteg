@@ -78,9 +78,9 @@ def onsets_y_frecs(audio, sr, duracion_segmento=0.4):
         if len(segmento) == 0:
             frecs_detectadas.append(0.0)
             continue
-        ventana_hann = segmento * np.hanning(len(segmento))
-        espec = np.abs(rfft(ventana_hann))
-        freqs = rfftfreq(len(ventana_hann), 1 / sr)
+        hann = segmento * np.hanning(len(segmento))
+        espec = np.abs(rfft(hann))
+        freqs = rfftfreq(len(hann), 1 / sr)
         fdom = freqs[np.argmax(espec)]
         frecs_detectadas.append(fdom)
 
