@@ -45,17 +45,17 @@ def inverso(a, m):
             return x
     raise ValueError(f"no se encontró el inverso mod")
 
-def recuperar_msg_con_indx(indices_ordenados):
+def recuperar_msg_con_indx(indx_ordenados):
   #reordenar los idx
     def indices_a_char(i1, i2, i3):
         byte = (i1 << 6) | (i2 << 3) | i3
         return chr(byte)
 
     chars = []
-    #print(f"\nidx recibidos: {indices_ordenados}")
+    #print(f"\nidx recibidos: {indx_ordenados}")
 
-    for i in range(0, len(indices_ordenados), 3):
-        grupo = indices_ordenados[i:i+3] #agrupo en 3
+    for i in range(0, len(indx_ordenados), 3):
+        grupo = indx_ordenados[i:i+3] #agrupo en 3
         if len(grupo) == 3:
             c = indices_a_char(*grupo)
             print(f"grupo {grupo} → '{c}'")
@@ -66,58 +66,58 @@ def recuperar_msg_con_indx(indices_ordenados):
 
 # funcion para encontrar onsets y extraer frec dominante
 
-def onsets_y_frecs(audio, sr, duracion_segmento=0.4):
+def onsets_y_frecs(audio, sr, muestra=0.4):
     y_librosa = librosa.util.normalize(audio)
-    onset_samples = librosa.onset.onset_detect(y=y_librosa, sr=sr, units='samples', backtrack=False)
+    onsets = librosa.onset.onset_detect(y=y_librosa, sr=sr, units='samples', backtrack=False)
 
-    frecs_detectadas = []
-    for onset in onset_samples:
+    frecs_encontradas = []
+    for onset in onsets: #por cada nota, extrae la frec
         inicio = int(onset)
-        fin = int(min(len(audio), onset + duracion_segmento * sr))
+        fin = int(min(len(audio), onset + muestra * sr))
         segmento = audio[inicio:fin]
         if len(segmento) == 0:
-            frecs_detectadas.append(0.0)
+            frecs_encontradas.append(0.0)
             continue
         hann = segmento * np.hanning(len(segmento))
         espec = np.abs(rfft(hann))
         freqs = rfftfreq(len(hann), 1 / sr)
         fdom = freqs[np.argmax(espec)]
-        frecs_detectadas.append(fdom)
+        frecs_encontradas.append(fdom)
 
-    return onset_samples, frecs_detectadas
+    return onsets, frecs_encontradas
 
 
 
 def decode(clave, compases, onsets, frecs_encontradas):
-    a, b = clave
+    a,b= clave
     a_inv = inverso(a, compases)
 
-    orden = np.argsort(onsets)
-    onsets_ord = np.array(onsets)[orden]
+    orden= np.argsort(onsets)
+    onsets_ord= np.array(onsets)[orden]
     frecs_ord = np.array(frecs_encontradas)[orden]
 
-    total_onsets = compases * 4
+    total_onsets = compases * 4 # 4 onsets por compas
     onsets_ord = onsets_ord[:total_onsets]
     frecs_ord = frecs_ord[:total_onsets]
 
-    #idx por idx original
-    lista_idx_i_original = []
+
+    idx_msj = [] #guarda solo las notas del msj
 
     for c in range (compases):
         ini = c * 4
         fin = ini + 4
         frecs_compas = frecs_ord[ini:fin]
 
-        idx_original =  (a_inv *(c-b)) %compases
-        beat_esperado = beat_random(idx_original, clave)
-        fdom = frecs_compas[beat_esperado]
-        idx = frec_a_indx(fdom)
+        i_original =  (a_inv *(c-b)) %compases
+        beat_msj= beat_random(i_original, clave)
+        fdom = frecs_compas[beat_msj]
+        idx= frec_a_indx(fdom)
         if idx is not None:
-            lista_idx_i_original.append((idx_original, idx))
+            idx_msj.append((i_original, idx))
 
-    lista_idx_i_original.sort(key=lambda x: x[0])
-    indices_ordenados = [idx for (_, idx) in lista_idx_i_original]
-    return recuperar_msg_con_indx(indices_ordenados)
+    idx_msj.sort(key=lambda x: x[0])
+    indx_ordenados = [idx for (_, idx) in idx_msj]
+    return recuperar_msg_con_indx(indx_ordenados)
 
 
 

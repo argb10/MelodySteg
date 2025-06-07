@@ -67,10 +67,11 @@ def emisor():
     pw = input("Escribe una contraseña: ")
     print("\nElige un instrumento (0-127):")
     print("0  - Piano")
-    print("32 - Guitarra")
-    print("46 - Pizzicato strings")
-    print("69 - Oboe")
-    print("123- Tweet")
+    print("3  - Piano eléctrico")
+    print("35 - Tuba")
+    print("42 - Viola")#nope
+    print("46 - Guitarra acústica") #nope si >3 char
+ 
     
     instr = int(input("escribe el número del instrumento: "))
 
