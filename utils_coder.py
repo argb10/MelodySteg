@@ -15,11 +15,11 @@ ACORDES = { "C":  [261.63, 329.63, 392.00],   # C4, E4, G4
 }
 PROGRESION = [
     "C","G","Am","F","C","G", # I–V–vi–IV 
-    "Am","F","C","G","Am","F","C","G","Am","F","C","G" #vi-IV-I-V
+    "Am","F","C","G","Am","F","C","G","Am","F","C","G" #vi-IV-I-V (x3)
 ]
 
 
-def kdf(pw:str, txt:str) -> Tuple[Tuple[int, int], int]:
+def kdf(pw, txt):
     compases = len(txt)*3
     v_aleatorio = b"melodia"
     key = pbkdf2_hmac('sha256', pw.encode(), v_aleatorio, 100_000, dklen=2)
@@ -38,7 +38,7 @@ def kdf(pw:str, txt:str) -> Tuple[Tuple[int, int], int]:
 def char_a_idx(c):
     byte = ord(c)
     indices = [(byte >> 6) & 0b111, (byte >> 3) & 0b111, byte & 0b111]
-    # print(f"'{c}' -> byte: {byte:08b} -> indices: {indices}")
+    # print(f"'{c}' -> byte: {byte} -> indices: {indices}")
     return indices
 
 
@@ -57,12 +57,12 @@ def nota_en_compas(idx, clave, compases):
     # print(f"Nota idx {idx} -> compas: {compas}")
     return compas
 
-def beat_random(i, clave): # da un n aleatorio a partir de la clave
+def beat_random(i, clave, numerador): # da un n aleatorio a partir de la clave
 
     a, b = clave
     seed = (a * 1000 + b) * (i + 1)
     random.seed(seed) # reinicia random 
-    return random.randint(0, 3) # posicion aleatoria
+    return random.randint(0, numerador-1) 
 
 def crear_melodia(texto, clave, compases): # se construye la melodia del msj
     indices = txt_a_idx(texto)
@@ -76,7 +76,7 @@ def crear_melodia(texto, clave, compases): # se construye la melodia del msj
     return melodia
 
 #se unen melodia y notas de relleno
-def mel_con_padding(melodia, compases, clave):
+def mel_con_padding(melodia, compases, clave, numerador):
 
     nota_por_compas = {}
     for i, frec, compas in melodia:
@@ -88,12 +88,12 @@ def mel_con_padding(melodia, compases, clave):
         i, frec_msj  = nota_por_compas[c]
         n_acorde = PROGRESION[ c % len(PROGRESION)]
         acorde = ACORDES[n_acorde]
-        pos_msj = beat_random(i, clave)
+        pos_msj = beat_random(i, clave, numerador)
 
         relleno_idx = 0 
 
 
-        for beat in range(4):
+        for beat in range(numerador):
             if beat == pos_msj:
                  # LOG:
                 print(f"compas {c}, beat {beat} → nota msj i={i}, frec={frec_msj:.2f} Hz")

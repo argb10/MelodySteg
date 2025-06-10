@@ -65,15 +65,24 @@ def emisor():
     
     entrada = input("Escribe el mensaje a codificar: ")
     pw = input("Escribe una contraseña: ")
-    print("\nElige un instrumento (0-127):")
+    print("\nElige un instrumento (0-127)")
     print("0  - Piano")
     print("3  - Piano eléctrico")
     print("35 - Tuba")
     print("42 - Viola")#nope
     print("46 - Guitarra acústica") #nope si >3 char
  
-    
     instr = int(input("escribe el número del instrumento: "))
+    if not 0 <= instr <= 127:
+        print("entrada no válida, se usará Piano (0) por defecto")
+        instr = 0
+    
+    compas = input("Escribe el compás (p.ej. 4/4): ").strip()
+    try:
+        numerador = int(compas.split('/')[0])
+    except:
+        print("Formato de compás no válido. Usando 4/4 por defecto.")
+        numerador = 4
 
     #clave, compases = generar_clave_compas(entrada)
     clave, compases = kdf(pw, entrada)
@@ -81,13 +90,13 @@ def emisor():
     print(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")
 
     melodia = crear_melodia(entrada, clave, compases)
-    mel_final = mel_con_padding(melodia, compases, clave)
+    mel_final = mel_con_padding(melodia, compases, clave, numerador)
     exportar_melodia_a_midi(mel_final,bpm=60, instrumento=instr)
 
     midi_a_wav("mensaje.mid", "mensaje.wav", "/usr/share/sounds/sf2/FluidR3_GM.sf2")
 
     with open("claves.txt", "w") as f:
-        f.write(f"\n Clave generada: a->{a}, b->{b}\n")
+        f.write(f"\n Clave generada: a->{a}, b->{b}, compás->{numerador}\n")
     
     print("Archivos creados: mensaje.wav y claves.txt")
     log_dispersión(entrada, melodia, mel_final)
@@ -97,7 +106,7 @@ def receptor():
 
     a =validar_entrada("Clave a: ")
     b =validar_entrada("Clave b: ")
-    #compases = validar_entrada("compases: ")
+    numerador = validar_entrada("Tiempos por compás: ")
 
 
     ruta = input("Ruta del archivo .wav: ").strip()
@@ -106,7 +115,7 @@ def receptor():
     y, sr, audio = cargar_audio(ruta)
 
     onsets, frecs = onsets_y_frecs(audio, sr)
-    compases = len(onsets)//4  # num de compases aprox
+    compases = len(onsets)//numerador  # calcula compases 
 
     #     # buscar las frecuencias
     # energia, _ = calcular_energia(audio, sr)
@@ -117,7 +126,7 @@ def receptor():
     # compases_encontrados= buscar_compases(picos, paso=int(0.01*sr), tasa_muestreo=sr, duracion_nota=0.7)
     # compases = len(compases_encontrados)
 
-    msj_final = decode(clave, compases, onsets, frecs)
+    msj_final = decode(clave, compases, onsets, frecs, numerador)
     print(f"Mensaje decodificado: {msj_final}")
 
 
