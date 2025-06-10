@@ -72,8 +72,8 @@ def onsets_y_frecs(audio, sr, muestra=0.4):
 
     frecs_encontradas = []
     for onset in onsets: #por cada nota, extrae la frec
-        inicio = int(onset)
-        fin = int(min(len(audio), onset + muestra * sr))
+        inicio =int(onset)
+        fin =int(min(len(audio), onset + muestra * sr))
         segmento = audio[inicio:fin]
         if len(segmento) == 0:
             frecs_encontradas.append(0.0)

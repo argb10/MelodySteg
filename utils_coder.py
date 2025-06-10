@@ -57,14 +57,14 @@ def nota_en_compas(idx, clave, compases):
     # print(f"Nota idx {idx} -> compas: {compas}")
     return compas
 
-def beat_random(i, clave, numerador): # da un n aleatorio a partir de la clave
+def beat_random(i, clave, numerador): 
 
     a, b = clave
     seed = (a * 1000 + b) * (i + 1)
     random.seed(seed) # reinicia random 
-    return random.randint(0, numerador-1) 
+    return random.randint(0, numerador-1)
 
-def crear_melodia(texto, clave, compases): # se construye la melodia del msj
+def crear_melodia(texto, clave, compases):
     indices = txt_a_idx(texto)
     melodia = []
 
