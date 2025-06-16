@@ -117,7 +117,7 @@ def imprimir_melodia(melodia):
         print(f"{freq:>10.2f} | {compas:>6}")
 
 #LOG pruebas
-def log_dispersión(texto, melodia, m_final):
+def log_dispersion(texto, melodia, m_final):
   
     compas_a_beat = {
         comp: beat

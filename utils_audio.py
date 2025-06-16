@@ -1,7 +1,7 @@
 import subprocess
 import os
 
-def midi_a_wav(nombre_midi="mensaje.mid", nombre_wav="mensaje.wav", soundfont="/usr/share/sounds/sf2/FluidR3_GM.sf2"):
+def midi_a_wav(nombre_midi="mensaje.mid", nombre_wav="mensaje.wav", soundfont="/usr/share/sounds/sf2/FluidR3_GM.sf2", gain=10.0):
     comando = [
         "fluidsynth",
         "-ni",
@@ -10,7 +10,8 @@ def midi_a_wav(nombre_midi="mensaje.mid", nombre_wav="mensaje.wav", soundfont="/
         "-F",
         nombre_wav,
         "-r",
-        "44100"
+        "44100",
+        "-g", str(gain)
     ]
     with open(os.devnull, 'w') as devnull:
         subprocess.run(comando, stdout=devnull, stderr=devnull)

@@ -8,7 +8,7 @@ import numpy as np
 
 from scipy.signal import find_peaks
 from utils_midi import exportar_melodia_a_midi
-from utils_coder import kdf, crear_melodia, imprimir_melodia, mel_con_padding, log_dispersión
+from utils_coder import kdf, crear_melodia, imprimir_melodia, mel_con_padding, log_dispersion
 from utils_audio import midi_a_wav
 from utils_decoder import cargar_audio,onsets_y_frecs, decode
 
@@ -92,14 +92,15 @@ def emisor():
     melodia = crear_melodia(entrada, clave, compases)
     mel_final = mel_con_padding(melodia, compases, clave, numerador)
     exportar_melodia_a_midi(mel_final,bpm=60, instrumento=instr)
-
+    imprimir_melodia(melodia)
+    
     midi_a_wav("mensaje.mid", "mensaje.wav", "/usr/share/sounds/sf2/FluidR3_GM.sf2")
 
     with open("claves.txt", "w") as f:
         f.write(f"\n Clave generada: a->{a}, b->{b}, compás->{numerador}\n")
     
     print("Archivos creados: mensaje.wav y claves.txt")
-    log_dispersión(entrada, melodia, mel_final)
+    log_dispersion(entrada, melodia, mel_final)
 
 def receptor():
     print("Clave para decodificar el mensaje")
