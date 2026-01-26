@@ -3,8 +3,6 @@
 Script que permite el envío de mensajes de texto mediante generación de ondas de audio.
 Utiliza un esquema de codificación para convertir el texto en frecuencias de audio haciendo uso de un algortimo esteganográfico.
 
-# Características
-
 
 # Cómo funciona
 
