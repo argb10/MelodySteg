@@ -4,25 +4,26 @@
 import argparse
 import sys
 import numpy as np
-#import IPython.display as ipd
+# import IPython.display as ipd
 
 from scipy.signal import find_peaks
 from utils_midi import exportar_melodia_a_midi
 from utils_coder import kdf, crear_melodia, imprimir_melodia, mel_con_padding, log_dispersion
 from utils_audio import midi_a_wav
-from utils_decoder import cargar_audio,onsets_y_frecs, decode
+from utils_decoder import cargar_audio, onsets_y_frecs, decode
 
 
-#funcion para validar clave del receptor
+# funcion para validar clave del receptor
 def validar_entrada(entrada):
     while True:
         respuesta = input(entrada).strip()
-        if respuesta.lower()== "salir":
+        if respuesta.lower() == "salir":
             print("Saliendo de la aplicación...")
             sys.exit(0)
         if respuesta.isdigit():
             return int(respuesta)
         print("Entrada no válida, debe ser un entero.")
+
 
 def help():
     print("""
@@ -41,7 +42,7 @@ Modo receptor:
 
 Requisitos:
     - Python 3
-    - Instalar dependencias: pip install -r requirements.txt y una sounfont
+    - Instalar dependencias: pip install -r requirements.txt y una soundfont
 
 """)
 
@@ -61,22 +62,20 @@ python3 main.py --help muestra guía de uso
                 --modo emisor/receptor
     ''')
 
+
 def emisor():
-    
+
     entrada = input("Escribe el mensaje a codificar: ")
     pw = input("Escribe una contraseña: ")
     print("\nElige un instrumento (0-127)")
     print("0  - Piano")
-    print("3  - Piano eléctrico")
-    print("35 - Tuba")
-    print("42 - Viola")#nope
-    print("46 - Guitarra acústica") #nope si >3 char
- 
+    print("46 - Guitarra acústica")  # no si >3 char
+
     instr = int(input("escribe el número del instrumento: "))
     if not 0 <= instr <= 127:
         print("entrada no válida, se usará Piano (0) por defecto")
         instr = 0
-    
+
     compas = input("Escribe el compás (p.ej. 4/4): ").strip()
     try:
         numerador = int(compas.split('/')[0])
@@ -84,46 +83,47 @@ def emisor():
         print("Formato de compás no válido. Usando 4/4 por defecto.")
         numerador = 4
 
-    #clave, compases = generar_clave_compas(entrada)
+    # clave, compases = generar_clave_compas(entrada)
     clave, compases = kdf(pw, entrada)
-    a,b = clave
+    a, b = clave
     print(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")
 
     melodia = crear_melodia(entrada, clave, compases)
     mel_final = mel_con_padding(melodia, compases, clave, numerador)
-    exportar_melodia_a_midi(mel_final,bpm=60, instrumento=instr)
+    exportar_melodia_a_midi(mel_final, bpm=60, instrumento=instr)
     imprimir_melodia(melodia)
-    
-    midi_a_wav("mensaje.mid", "mensaje.wav", "/usr/share/sounds/sf2/FluidR3_GM.sf2")
+
+    midi_a_wav("mensaje.mid", "mensaje.wav",
+               "/usr/share/sounds/sf2/FluidR3_GM.sf2")
 
     with open("claves.txt", "w") as f:
         f.write(f"\n Clave generada: a->{a}, b->{b}, compás->{numerador}\n")
-    
+
     print("Archivos creados: mensaje.wav y claves.txt")
     log_dispersion(entrada, melodia, mel_final)
+
 
 def receptor():
     print("Clave para decodificar el mensaje")
 
-    a =validar_entrada("Clave a: ")
-    b =validar_entrada("Clave b: ")
+    a = validar_entrada("Clave a: ")
+    b = validar_entrada("Clave b: ")
     numerador = validar_entrada("Tiempos por compás: ")
-
 
     ruta = input("Ruta del archivo .wav: ").strip()
 
-    clave = (a,b)
+    clave = (a, b)
     y, sr, audio = cargar_audio(ruta)
 
     onsets, frecs = onsets_y_frecs(audio, sr)
-    compases = len(onsets)//numerador  # calcula compases 
+    compases = len(onsets)//numerador  # calcula compases
 
     #     # buscar las frecuencias
     # energia, _ = calcular_energia(audio, sr)
     # picos, _  = find_peaks(energia, height=np.max(energia)*0.3, distance=int(0.4/0.01))
     # frecs = detectar_frecs(audio, picos, duracion_nota=0.7, tasa_muestreo=sr)
     # melodia=obtener_melodia(frecs)
-    
+
     # compases_encontrados= buscar_compases(picos, paso=int(0.01*sr), tasa_muestreo=sr, duracion_nota=0.7)
     # compases = len(compases_encontrados)
 
@@ -133,35 +133,44 @@ def receptor():
 
 def main():
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--modo', choices=['emisor','receptor'])
+    parser.add_argument('--modo', choices=['emisor', 'receptor'])
     parser.add_argument('--help', action='store_true')
     args = parser.parse_args()
 
     banner()
 
-    if args.help : help()
+    if args.help:
+        help()
 
-    #si se elige el modo directamente:
+    # si se elige el modo directamente:
     if args.modo:
-        if args.modo == 'emisor': emisor()
-        elif args.modo == 'receptor': receptor()
+        if args.modo == 'emisor':
+            emisor()
+        elif args.modo == 'receptor':
+            receptor()
         return
 
     while True:
-        modo = input("\nSelecciona un modo para continuar (emisor/receptor) o 'salir': ").strip().lower()
-        
+        modo = input(
+            "\nSelecciona un modo para continuar (emisor/receptor) o 'salir': ").strip().lower()
+
         if modo == 'emisor':
-           emisor()
-           break
+            emisor()
+            break
         elif modo == 'receptor':
-           receptor()
-           break
+            receptor()
+            break
         elif modo == "salir":
             print("Saliendo de la aplicación...")
             sys.exit(0)
         else:
             print("Entrada no válida. Escribe si eres 'emisor/receptor' o 'salir'. ")
-            
+
 
 if __name__ == "__main__":
     main()
+
+
+#   print("3  - Piano eléctrico")
+#   print("35 - Tuba")
+#   print("42 - Viola")
