@@ -7,6 +7,16 @@ from hashlib import pbkdf2_hmac
 # Am pentatónica ampliada a 8 notas
 FREQS = np.array([220.00, 261.63, 293.66, 329.63,
                  392.00, 440.00, 523.25, 587.33])
+# FREQS = np.array([
+#     220.00,  # A3
+#     246.94,  # B3
+#     261.63,  # C4
+#     293.66,  # D4
+#     329.63,  # E4
+#     349.23,  # F4
+#     392.00,  # G4
+#     440.00,  # A4
+# ])
 
 # acordes en relativa Cmaj
 ACORDES = {"C":  [261.63, 329.63, 392.00],   # C4, E4, G4
