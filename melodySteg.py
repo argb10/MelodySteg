@@ -104,7 +104,7 @@ def emisor():
 
 
 def receptor():
-    print("Clave para decodificar el mensaje")
+    print("- Clave para decodificar el mensaje -")
 
     a = validar_entrada("Clave a: ")
     b = validar_entrada("Clave b: ")

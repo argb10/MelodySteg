@@ -3,10 +3,12 @@ from scipy.io import wavfile
 from utils_coder import FREQS
 import numpy as np
 import librosa
-import wave # for .wav format
+import wave  # for .wav format
 from utils_coder import beat_random
 
-#file = wave.open("mensaje.wav", "r") # rb = read binary
+# file = wave.open("mensaje.wav", "r") # rb = read binary
+
+
 def cargar_audio(ruta_archivo):
     tasa_muestreo, datos = wavfile.read(ruta_archivo)
     y, sr = librosa.load(ruta_archivo, sr=None)
@@ -15,11 +17,13 @@ def cargar_audio(ruta_archivo):
     if len(datos.shape) == 2:
         datos = datos[:, 0]
 
-    audio = datos.astype(np.float32) / np.max(np.abs(datos)) # normalizar los datos
-    
+    audio = datos.astype(np.float32) / \
+        np.max(np.abs(datos))  # normalizar los datos
+
     return y, sr, audio
 
-# FUNCIONES DECODIFICACION 
+
+# FUNCIONES DECODIFICACION
 '''def calcular_energia(audio, tasa_muestreo): 
     ventana = int(0.05 * tasa_muestreo)
     paso = int(0.01 * tasa_muestreo)
@@ -29,33 +33,36 @@ def cargar_audio(ruta_archivo):
     return energia, tiempos # tiempos correspondientes a cada punto de energía
 '''
 
+
 def frec_a_indx(f, tolerancia=5.0):
     dif = np.abs(FREQS - f)
     indice = np.argmin(dif)
 
-    if dif[indice] <= tolerancia:#si encuentra frec...
+    if dif[indice] <= tolerancia:  # si encuentra frec...
         return indice
     else:
         return None
 
+
 def inverso(a, m):
-#buscar el 'i' con el q se codificó la nota original
+    # buscar el 'i' con el q se codificó la nota original
     for x in range(1, m):
         if (a * x) % m == 1:
             return x
     raise ValueError(f"no se encontró el inverso mod")
 
+
 def recuperar_msg_con_indx(indx_ordenados):
-  #reordenar los idx
+  # reordenar los idx
     def indices_a_char(i1, i2, i3):
         byte = (i1 << 6) | (i2 << 3) | i3
         return chr(byte)
 
     chars = []
-    #print(f"\nidx recibidos: {indx_ordenados}")
+    # print(f"\nidx recibidos: {indx_ordenados}")
 
     for i in range(0, len(indx_ordenados), 3):
-        grupo = indx_ordenados[i:i+3] #agrupo en 3
+        grupo = indx_ordenados[i:i+3]  # agrupo en 3
         if len(grupo) == 3:
             c = indices_a_char(*grupo)
             print(f"grupo {grupo} → '{c}'")
@@ -68,12 +75,13 @@ def recuperar_msg_con_indx(indx_ordenados):
 
 def onsets_y_frecs(audio, sr, muestra=0.4):
     y_librosa = librosa.util.normalize(audio)
-    onsets = librosa.onset.onset_detect(y=y_librosa, sr=sr, units='samples', backtrack=False)
+    onsets = librosa.onset.onset_detect(
+        y=y_librosa, sr=sr, units='samples', backtrack=False)
 
     frecs_encontradas = []
-    for onset in onsets: #por cada nota, extrae la frec
-        inicio =int(onset)
-        fin =int(min(len(audio), onset + muestra * sr))
+    for onset in onsets:  # por cada nota, extrae la frec
+        inicio = int(onset)
+        fin = int(min(len(audio), onset + muestra * sr))
         segmento = audio[inicio:fin]
         if len(segmento) == 0:
             frecs_encontradas.append(0.0)
@@ -87,35 +95,33 @@ def onsets_y_frecs(audio, sr, muestra=0.4):
     return onsets, frecs_encontradas
 
 
-
 def decode(clave, compases, onsets, frecs_encontradas, numerador):
-    a,b= clave
+    a, b = clave
     a_inv = inverso(a, compases)
 
-    orden= np.argsort(onsets)
-    #onsets_ord= np.array(onsets)[orden][:compases * numerador]
-    frecs_ord = np.array(frecs_encontradas)[orden][:compases*numerador] #se guardan las frec necesarias
+    orden = np.argsort(onsets)
+    # onsets_ord= np.array(onsets)[orden][:compases * numerador]
+    # se guardan las frec necesarias
+    frecs_ord = np.array(frecs_encontradas)[orden][:compases*numerador]
 
+    idx_msj = []
 
-    idx_msj = [] 
+    for c in range(compases):
 
-    for c in range (compases):
- 
-        segmento = frecs_ord[c*numerador : (c+1)*numerador]
+        segmento = frecs_ord[c*numerador: (c+1)*numerador]
 
-        i_original =  (a_inv *(c-b)) %compases
-        beat_msj= beat_random(i_original, clave, numerador) #posicion nota_msj
+        i_original = (a_inv * (c-b)) % compases
+        beat_msj = beat_random(
+            i_original, clave, numerador)  # posicion nota_msj
         f_msj = segmento[beat_msj]
-        idx= frec_a_indx(f_msj)
+        idx = frec_a_indx(f_msj)
         if idx is not None:
             idx_msj.append((i_original, idx))
 
     idx_msj.sort(key=lambda x: x[0])
-    indx_ordenados = [idx for (_, idx) in idx_msj] #solo indx de la frec_msj
+    indx_ordenados = [idx for (_, idx) in idx_msj]  # solo indx de la frec_msj
 
     return recuperar_msg_con_indx(indx_ordenados)
-
-
 
 
 '''
