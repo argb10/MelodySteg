@@ -8,7 +8,7 @@ __pycache__/
 
 # vs code
 .vscode/
-
+vscode/
 
 # Distribution / packaging
 .Python
