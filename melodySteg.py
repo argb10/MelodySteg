@@ -1,19 +1,28 @@
 #!p/usr/bin/env python3
 
-
 import argparse
 import sys
-import numpy as np
+import os
+import re
 # import IPython.display as ipd
+from utils.utils_coder import kdf_from_compases 
+from utils.utils_midi import exportar_melodia_a_midi
+from utils.utils_coder import (
+        kdf,
+        crear_melodia,
+        imprimir_melodia,
+        mel_con_padding,
+        log_dispersion
+    )
+from utils.utils_audio import midi_a_wav
+from utils.utils_decoder import (
+        cargar_audio,
+        onsets_y_frecs,
+       # inferir_numerador_y_compases,#NEW
+        decode
+    )
 
-from scipy.signal import find_peaks
-from utils_midi import exportar_melodia_a_midi
-from utils_coder import kdf, crear_melodia, imprimir_melodia, mel_con_padding, log_dispersion
-from utils_audio import midi_a_wav
-from utils_decoder import cargar_audio, onsets_y_frecs, decode
 
-
-# funcion para validar clave del receptor
 def validar_entrada(entrada):
     while True:
         respuesta = input(entrada).strip()
@@ -63,8 +72,23 @@ python3 main.py --help muestra guía de uso
     ''')
 
 
-def emisor():
+def cargar_claves_desde_archivo(ruta: str): # new
+    try:
+        with open(ruta, "r", encoding="utf-8") as f:
+            contenido = f.read()
+    except FileNotFoundError:
+        return None
 
+    patron = r"a\\s*->\\s*(\\d+).*?b\\s*->\\s*(\\d+).*?comp[aá]s\\s*->\\s*(\\d+)"
+    match = re.search(patron, contenido, flags=re.IGNORECASE | re.DOTALL)
+    if not match:
+        return None
+
+    a, b, numerador = (int(x) for x in match.groups())
+    return (a, b), numerador
+
+
+def emisor():
     entrada = input("Escribe el mensaje a codificar: ")
     pw = input("Escribe una contraseña: ")
     print("\nElige un instrumento (0-127)")
@@ -76,11 +100,11 @@ def emisor():
         print("entrada no válida, se usará Piano (0) por defecto")
         instr = 0
 
-    compas = input("Escribe el compás (p.ej. 4/4): ").strip()
+    compas = input("Escribe el compás (e.g. 4/4): ").strip()
     try:
         numerador = int(compas.split('/')[0])
     except:
-        print("Formato de compás no válido. Usando 4/4 por defecto.")
+        print("compás no válido, usando 4/4 por defecto...")
         numerador = 4
 
     # clave, compases = generar_clave_compas(entrada)
@@ -103,20 +127,54 @@ def emisor():
     log_dispersion(entrada, melodia, mel_final)
 
 
-def receptor():
-    print("- Clave para decodificar el mensaje -")
+def receptor(ruta_wav=None, ruta_claves="claves.txt", pw=None, numerador=None):
+    #NEW
+    print("- Parámetros para decodificar el mensaje -")
 
-    a = validar_entrada("Clave a: ")
-    b = validar_entrada("Clave b: ")
-    numerador = validar_entrada("Tiempos por compás: ")
+    clave = None
 
-    ruta = input("Ruta del archivo .wav: ").strip()
+    if not ruta_wav:
+        if os.path.exists("mensaje.wav"):
+            ruta_wav = "mensaje.wav"
+            print("Usando archivo por defecto: mensaje.wav")
+        else:
+            ruta_wav = input("Ruta del archivo .wav: ").strip()
 
-    clave = (a, b)
-    y, sr, audio = cargar_audio(ruta)
+    # se toma el numerador desde claves.txt 
+    # (a,b) solo se coge del txt si NO se proporciona una pw
+    if ruta_claves and os.path.exists(ruta_claves):
+        cargado = cargar_claves_desde_archivo(ruta_claves)
+        if cargado:
+            clave_archivo, numerador_archivo = cargado
+            if numerador is None:
+                numerador = numerador_archivo
+            if pw is None:
+                clave = clave_archivo
+                a, b = clave
+                print(
+                    f"Usando claves desde '{ruta_claves}': a={a}, b={b}, compás={numerador}")
+            else:
+                print(
+                    f"Usando compás desde '{ruta_claves}': compás={numerador}")
+
+    ##NEW
+    y, sr, audio = cargar_audio(ruta_wav)
 
     onsets, frecs = onsets_y_frecs(audio, sr)
-    compases = len(onsets)//numerador  # calcula compases
+
+    compases = len(onsets)//numerador  # calcula compases  #PROBAR SOLO CON ESTO
+    print(f"Compases inferidos: {numerador}")
+    #NEW
+    if numerador is None:
+        numerador = 4
+        print("No se pudo obtener el numerador; usando 4 por defecto.")
+
+    if clave is None:
+        if pw is None:
+            pw = input("Escribe la contraseña: ").strip()
+        clave = kdf_from_compases(pw, compases)
+
+
 
     #     # buscar las frecuencias
     # energia, _ = calcular_energia(audio, sr)
@@ -127,7 +185,7 @@ def receptor():
     # compases_encontrados= buscar_compases(picos, paso=int(0.01*sr), tasa_muestreo=sr, duracion_nota=0.7)
     # compases = len(compases_encontrados)
 
-    msj_final = decode(clave, compases, onsets, frecs, numerador)
+    msj_final = decode(clave, onsets, frecs, numerador)
     print(f"Mensaje decodificado: {msj_final}")
 
 
@@ -135,6 +193,15 @@ def main():
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--modo', choices=['emisor', 'receptor'])
     parser.add_argument('--help', action='store_true')
+    #NEW
+    parser.add_argument(
+        '--wav', help="Ruta del archivo .wav  (modo receptor).")
+    parser.add_argument('--claves', default="claves.txt",
+                        help="Ruta del archivo con a,b y compás (claves.txt).")
+    parser.add_argument(
+        '--pw', help="Contraseña para derivar (a,b) (modo receptor).")
+    
+    ##NEW
     args = parser.parse_args()
 
     banner()
@@ -147,7 +214,8 @@ def main():
         if args.modo == 'emisor':
             emisor()
         elif args.modo == 'receptor':
-            receptor()
+            receptor(ruta_wav=args.wav, ruta_claves=args.claves,
+                    pw=args.pw)
         return
 
     while True:
