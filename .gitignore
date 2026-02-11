@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+*.wav
+*.mid
+*.txt 
+
 # vs code
 .vscode/
 vscode/
