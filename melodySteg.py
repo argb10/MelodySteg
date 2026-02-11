@@ -209,18 +209,15 @@ def emisor():
 def receptor(ruta_claves="claves.txt"):
     print("- Receptor -")
 
-    # 1) SIEMPRE pedir WAV y contraseña
     ruta_wav = input("Inserte la ruta del archivo .wav: ").strip()
     pw = input("Inserte la contraseña: ").strip()
 
-    # 2) Cargar audio y extraer onsets/frecs
     y, sr, audio = cargar_audio(ruta_wav)
     onsets, frecs = onsets_y_frecs(audio, sr)
 
     numerador = None
     compases = None
 
-    # 3) Intentar leer metadatos del txt (si existe)
     if ruta_claves and os.path.exists(ruta_claves):
         meta = cargar_meta_desde_archivo(ruta_claves)
         if meta:
@@ -233,8 +230,8 @@ def receptor(ruta_claves="claves.txt"):
     else:
         print("No se encontró archivo .txt. estimando  datos...")
 
-    # 4) Si falta numerador/compases, estimar desde audio
     if numerador is None or compases is None:
+        #  estimar desde audio num y compases si no los da
         numerador_inf, compases_inf = estimar_metrica(onsets, sr)
         if numerador is None:
             numerador = numerador_inf
@@ -242,12 +239,11 @@ def receptor(ruta_claves="claves.txt"):
             compases = compases_inf
         print(f"Métrica estimada: numerador={numerador}, compases={compases}")
 
-    # 5) Fallbacks mínimos por si la estimación falla
+    # por si la estimación falla :)
     if numerador is None:
         numerador = 4
         print("No se pudo estimar numerador; usando 4 por defecto.")
 
-    # limitar compases a lo disponible en el wav (robustez)
     compases_max = len(onsets) // numerador
     if compases is None or compases > compases_max:
         compases = compases_max
@@ -256,10 +252,8 @@ def receptor(ruta_claves="claves.txt"):
         raise ValueError(
             "No hay suficientes onsets para decodificar (compases <= 0).")
 
-    # 6) Derivar clave desde pw + compases (igual que el emisor)
-    clave = kdf_from_compases(pw, compases)
+    clave = kdf_from_compases(pw, compases)  # derivo la clave
 
-    # 7) Decodificar
     msj_final = decode(clave, compases, onsets, frecs, numerador)
     print(f"\nMensaje decodificado: {msj_final}")
     return msj_final
