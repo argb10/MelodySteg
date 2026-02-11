@@ -133,66 +133,6 @@ def emisor():
     print("Archivos creados: mensaje.wav y claves.txt")
     log_dispersion(entrada, melodia, mel_final)
 
-
-# def receptor(ruta_wav=None, ruta_claves="claves.txt", pw=None, numerador=None):
-#     # NEW
-#     print("- Parámetros para decodificar el mensaje -")
-
-#     clave = None
-
-#     if not ruta_wav:
-#         if os.path.exists("mensaje.wav"):
-#             ruta_wav = "mensaje.wav"
-#             print("Usando archivo por defecto: mensaje.wav")
-#         else:
-#             ruta_wav = input("Ruta del archivo .wav: ").strip()
-
-#     # se toma el numerador desde claves.txt
-#     # (a,b) solo se coge del txt si NO se proporciona una pw
-#     if ruta_claves and os.path.exists(ruta_claves):
-#         cargado = cargar_claves_desde_archivo(ruta_claves)
-#         if cargado:
-#             clave_archivo, numerador_archivo = cargado
-#             if numerador is None:
-#                 numerador = numerador_archivo
-#             if pw is None:
-#                 clave = clave_archivo
-#                 a, b = clave
-#                 print(
-#                     f"Usando claves desde '{ruta_claves}': a={a}, b={b}, compás={numerador}")
-#             else:
-#                 print(
-#                     f"Usando compás desde '{ruta_claves}': compás={numerador}")
-
-#     # NEW
-#     y, sr, audio = cargar_audio(ruta_wav)
-
-#     onsets, frecs = onsets_y_frecs(audio, sr)
-#    # compases = len(onsets)//numerador  # calcula compases
-
-#     # NEW
-#     compases = None
-#     if numerador is None:
-#         numerador_inf, compases_inf = estimar_metrica(onsets, sr)
-#         if numerador_inf is not None:
-#             numerador = numerador_inf
-#             compases = compases_inf
-#             print(f"Numerador estimado: {numerador}")
-
-#     if numerador is None:
-#         numerador = 4
-#         print("No se pudo obtener el numerador; usando 4 por defecto.")
-
-#      # limitar compases a lo realmente disponible en el wav (por robustez)
-#     compases_max = len(onsets) // numerador
-#     if compases is None or compases > compases_max:
-#         compases = compases_max
-
-#     if clave is None:
-#         if pw is None:
-#             pw = input("Escribe la contraseña: ").strip()
-#         clave = kdf_from_compases(pw, compases)
-
 #     #     # buscar las frecuencias
 #     # energia, _ = calcular_energia(audio, sr)
 #     # picos, _  = find_peaks(energia, height=np.max(energia)*0.3, distance=int(0.4/0.01))
