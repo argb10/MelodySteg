@@ -69,11 +69,7 @@ python3 main.py --help muestra guía de uso
 
 
 def cargar_meta_desde_archivo(ruta: str) -> Optional[Tuple[int, int]]:
-    """
-    Lee numerador y compases desde claves.txt
-    Formato esperado (flexible):
-      meta: numerador->4, compases->36
-    """
+    # ahora lee numerador y compases desde claves.txt y los inserta como parametros directamente
     try:
         with open(ruta, "r", encoding="utf-8") as f:
             contenido = f.read()
@@ -115,6 +111,7 @@ def emisor():
     # clave, compases = generar_clave_compas(entrada)
     clave, compases = kdf(pw, entrada)
     a, b = clave
+    # esto es un log de prueba no deberia mostrarse
     print(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")
 
     melodia = crear_melodia(entrada, clave, compases)
@@ -159,6 +156,7 @@ def receptor(ruta_claves="claves.txt"):
     compases = None
 
     if ruta_claves and os.path.exists(ruta_claves):
+        # receptor carga los parametros
         meta = cargar_meta_desde_archivo(ruta_claves)
         if meta:
             numerador, compases = meta
@@ -171,7 +169,7 @@ def receptor(ruta_claves="claves.txt"):
         print("No se encontró archivo .txt. estimando  datos...")
 
     if numerador is None or compases is None:
-        #  estimar desde audio num y compases si no los da
+        #  estimar desde audio num y compases si no los da el usuario
         numerador_inf, compases_inf = estimar_metrica(onsets, sr)
         if numerador is None:
             numerador = numerador_inf
@@ -181,7 +179,7 @@ def receptor(ruta_claves="claves.txt"):
 
     if numerador is None:
         raise ValueError(
-            "No se pudo estimar el numerador")  # por si la estimación falla
+            "No se pudo estimar el numerador")
 
     compases_max = len(onsets) // numerador
     if compases is None or compases > compases_max:
