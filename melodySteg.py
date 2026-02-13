@@ -146,8 +146,8 @@ def emisor():
 def receptor(ruta_claves="claves.txt"):
     print("- Receptor -")
 
-    ruta_wav = input("Inserte la ruta del archivo .wav: ").strip()
-    pw = input("Inserte la contraseña: ").strip()
+    ruta_wav = input("escribe la ruta del .wav: ").strip()
+    pw = input("escribe la contraseña: ").strip()
 
     y, sr, audio = cargar_audio(ruta_wav)
     onsets, frecs = onsets_y_frecs(audio, sr)
