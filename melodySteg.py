@@ -179,10 +179,9 @@ def receptor(ruta_claves="claves.txt"):
             compases = compases_inf
         print(f"Métrica estimada: numerador={numerador}, compases={compases}")
 
-    # por si la estimación falla :)
     if numerador is None:
-        numerador = 4
-        print("No se pudo estimar numerador; usando 4 por defecto.")
+        raise ValueError(
+            "No se pudo estimar el numerador")  # por si la estimación falla
 
     compases_max = len(onsets) // numerador
     if compases is None or compases > compases_max:
