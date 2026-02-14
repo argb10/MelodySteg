@@ -192,7 +192,7 @@ def receptor(ruta_claves="claves.txt"):
 
     if compases <= 0:
         raise ValueError(
-            "No hay suficientes onsets para decodificar (compases <= 0).")
+            "no hay suficientes onsets :(")
 
     clave = kdf_from_compases(pw, compases)  # derivo la clave
 
