@@ -1,6 +1,7 @@
 import subprocess
 import os
 
+
 def midi_a_wav(nombre_midi="mensaje.mid", nombre_wav="mensaje.wav", soundfont="/usr/share/sounds/sf2/FluidR3_GM.sf2", gain=10.0):
     comando = [
         "fluidsynth",

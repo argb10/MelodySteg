@@ -1,5 +1,4 @@
 #!p/usr/bin/env python3
-
 import argparse
 import sys
 import os
@@ -101,7 +100,7 @@ def emisor():
         print("entrada no válida, se usará Piano (0) por defecto")
         instr = 0
 
-    compas = input("Escribe el compás (e.g. 4/4): ").strip()
+    compas = input("Escribe el numerador de compás (e.g. 4/4): ").strip()
     try:
         numerador = int(compas.split('/')[0])
     except:
@@ -116,7 +115,12 @@ def emisor():
 
     melodia = crear_melodia(entrada, clave, compases)
     mel_final = mel_con_padding(melodia, compases, clave, numerador)
+    # old but works..
     exportar_melodia_a_midi(mel_final, bpm=60, instrumento=instr)
+    # exportar_melodia_a_midi(
+    #     mel_final, bpm=60, instrumento=instr, numerador=numerador, segunda_voz=True) #experimento v1
+    # exportar_melodia_a_midi(mel_final, bpm=60, instrumento=instr,
+    #                         numerador=numerador, step_div=2, segunda_voz=True)  # experimento v2
     imprimir_melodia(melodia)
 
     midi_a_wav("mensaje.mid", "mensaje.wav",

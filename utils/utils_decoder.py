@@ -116,7 +116,7 @@ def estimar_metrica(onsets, sr, min_numerador=2, max_numerador=12):
     except Exception:
         return None, None
 
-    # diferencias entre inicios de notas (duración aproximada de cada nota)
+    # diferencias entre inicios de notas (duracion aprox de cada nota)
     dt = np.diff(onsets) / float(sr)
     if dt.size < 5:
         return None, None

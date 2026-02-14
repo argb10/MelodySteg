@@ -4,9 +4,10 @@ from math import gcd
 from typing import Tuple
 from hashlib import pbkdf2_hmac
 
-# Am pentatónica ampliada a 8 notas
+# Am pentatónica de 8 notas para msg
 FREQS = np.array([220.00, 261.63, 293.66, 329.63,
                  392.00, 440.00, 523.25, 587.33])
+
 # FREQS = np.array([
 #     220.00,  # A3
 #     246.94,  # B3
@@ -18,7 +19,8 @@ FREQS = np.array([220.00, 261.63, 293.66, 329.63,
 #     440.00,  # A4
 # ])
 
-# acordes en relativa Cmaj
+
+# acordes en relativa Cmaj para padding
 ACORDES = {"C":  [261.63, 329.63, 392.00],   # C4, E4, G4
            "G":  [196.00, 246.94, 293.66],   # G3, B3, D4
            "Am": [220.00, 261.63, 329.63],   # A3, C4/(523.25 Hz), E4
@@ -38,6 +40,8 @@ def kdf(pw, txt):
     return clave, compases
 
 # new
+
+
 def kdf_from_compases(pw: str, compases: int) -> Tuple[int, int]:
     if compases <= 0:
         raise ValueError("compases debe ser un entero positivo")
@@ -99,7 +103,7 @@ def crear_melodia(texto, clave, compases):
     return melodia
 
 
-def mel_con_padding(melodia, compases, clave, numerador):  
+def mel_con_padding(melodia, compases, clave, numerador):
     '''se unen melodia y notas de relleno'''
     nota_por_compas = {}
     for i, frec, compas in melodia:

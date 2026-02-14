@@ -1,2 +1,1 @@
-
- Clave generada: a->5, b->128, compás->2
+datos: numerador->2, compases->75
