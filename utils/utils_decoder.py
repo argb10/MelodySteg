@@ -7,7 +7,7 @@ from scipy.io import wavfile
 from utils.utils_coder import FREQS
 from utils.utils_coder import beat_random
 
-# file = wave.open("mensaje.wav", "r") # rb = read binary
+# file = wave.open("mensaje.wav", "r")
 
 
 def cargar_audio(ruta_archivo):
@@ -99,14 +99,7 @@ def onsets_y_frecs(audio, sr, muestra=0.4):
 
 
 def estimar_metrica(onsets, sr, min_numerador=2, max_numerador=12):
-    """
-    Intenta inferir el numerador y compases en total(tiempos por compás) desde el patrón de duraciones.
-
-    En este proyecto, las notas de "relleno" y las notas "mensaje" tienen duraciones
-    distintas en el MIDI (cortas vs largas). Como hay 1 nota de mensaje por compás,
-    el ratio entre notas totales y notas largas aproxima el numerador.
-
-    Devuelve: (numerador, compases) o (None, None) si no puede inferir.
+    """Intenta inferir el numerador y compases en total(tiempos por compás) desde el patrón de duraciones. Y dev numerador y compases. 
     """
     if onsets is None or len(onsets) < 6:
         return None, None

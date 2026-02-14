@@ -179,7 +179,8 @@ def receptor(ruta_claves="claves.txt"):
             numerador = numerador_inf
         if compases is None:
             compases = compases_inf
-        print(f"Métrica estimada: numerador={numerador}, compases={compases}")
+        print(
+            f"parametros estimados: numerador={numerador} y compases={compases}")
 
     if numerador is None:
         raise ValueError(
