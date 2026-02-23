@@ -1,9 +1,8 @@
-#!p/usr/bin/env python3
+#!/usr/bin/env python3
 import argparse
 import sys
 import os
 import re
-# import IPython.display as ipd
 from typing import Optional, Tuple
 from utils.utils_coder import kdf_from_compases
 from utils.utils_midi import exportar_melodia_a_midi
@@ -18,41 +17,39 @@ from utils.utils_audio import midi_a_wav
 from utils.utils_decoder import cargar_audio, onsets_y_frecs, estimar_metrica, decode
 
 
-def validar_entrada(entrada):
+def validar_entrada(prompt: str) -> int:
     while True:
-        respuesta = input(entrada).strip()
-        if respuesta.lower() == "salir":
-            print("Saliendo de la aplicación...")
+        respuesta = input(prompt).strip()
+        if respuesta.lower() == "exit":
+            print("Exiting...")
             sys.exit(0)
         if respuesta.isdigit():
             return int(respuesta)
-        print("Entrada no válida, debe ser un entero.")
+        print("Invalid input; enter an integer.")
 
 
-def help():
+def print_help():
     print("""
+Usage:
+    python melodySteg.py --modo sender/receiver
 
-Uso:
-    python3 main.py --modo emisor/receptor
+Sender mode:
+    - Enter a message at the prompt.
+    - The program encodes the message and generates 'mensaje.wav'.
+    - It also generates 'claves.txt' with parameters needed to decode (numerator, measures).
 
-Modo emisor:
-    - Introduce un mensaje desde la terminal.
-    - El programa codificará el mensaje y generará 'mensaje.wav'.
-    - También generará 'clave_para_receptor.txt' con los parámetros: clave(a,b) para decodificar.
+Receiver mode:
+    - Provide the 'mensaje.wav' file and 'claves.txt'.
+    - Enter the WAV path and password when prompted to decode the message.
 
-Modo receptor:
-    - Recibe el archivo 'mensaje.wav' y 'clave_para_receptor.txt'.
-    - El programa pedirá que ingreses los valores de clave y selecciones el .WAV para decodificar el mensaje.
-
-Requisitos:
+Requirements:
     - Python 3
-    - Instalar dependencias: pip install -r requirements.txt y una soundfont
-
+    - Dependencies: pip install -r requirements.txt and a SoundFont
 """)
 
 
 def banner():
-    print(r'''     
+    print(r'''
 ___  ___     _           _       _____ _             
 |  \/  |    | |         | |     /  ___| |            
 | .  . | ___| | ___   __| |_   _\ `--.| |_ ___  __ _ 
@@ -60,15 +57,14 @@ ___  ___     _           _       _____ _
 | |  | |  __/ | (_) | (_| | |_| /\__/ / ||  __/ (_| |
 \_|  |_/\___|_|\___/ \__,_|\__, \____/ \__\___|\__, |
                             __/ |               __/ |
-                           |___/               |___/                                                                          
-Hide messages using audio   
-python3 main.py --help muestra guía de uso
-                --modo emisor/receptor
-    ''')
+                           |___/               |___/
+Hide messages using audio
+  python melodySteg.py --help  |  --modo sender/receiver
+''')
 
 
 def cargar_meta_desde_archivo(ruta: str) -> Optional[Tuple[int, int]]:
-    # ahora lee numerador y compases desde claves.txt y los inserta como parametros directamente
+    """Read numerator and measures from keys file (e.g. claves.txt)."""
     try:
         with open(ruta, "r", encoding="utf-8") as f:
             contenido = f.read()
@@ -89,69 +85,54 @@ def cargar_meta_desde_archivo(ruta: str) -> Optional[Tuple[int, int]]:
 
 
 def emisor():
-    entrada = input("Escribe el mensaje a codificar: ")
-    pw = input("Escribe una contraseña: ")
-    print("\nElige un instrumento (0-127)")
+    entrada = input("Enter message to encode: ")
+    pw = input("Enter password: ")
+    print("\nChoose instrument (0-127)")
     print("0  - Piano")
-    print("46 - Guitarra acústica")  # no si >3 char
+    print("46 - Acoustic guitar")
 
-    instr = int(input("escribe el número del instrumento: "))
+    try:
+        instr = int(input("Enter instrument number: "))
+    except ValueError:
+        instr = 0
     if not 0 <= instr <= 127:
-        print("entrada no válida, se usará Piano (0) por defecto")
+        print("Invalid input; using Piano (0).")
         instr = 0
 
-    compas = input("Escribe el numerador de compás (e.g. 4/4): ").strip()
+    compas = input("Enter time signature numerator (e.g. 4 for 4/4): ").strip()
     try:
         numerador = int(compas.split('/')[0])
-    except:
-        print("compás no válido, usando 4/4 por defecto...")
+    except (ValueError, IndexError):
+        print("Invalid time signature; using 4/4.")
         numerador = 4
 
-    # clave, compases = generar_clave_compas(entrada)
     clave, compases = kdf(pw, entrada)
     a, b = clave
-    # esto es un log de prueba no deberia mostrarse
-    print(f"\n Clave generada: a->{a}, b->{b} y compases->{compases}\n")
+    print(f"\nKey: a->{a}, b->{b}, measures->{compases}\n")
 
     melodia = crear_melodia(entrada, clave, compases)
     mel_final = mel_con_padding(melodia, compases, clave, numerador)
-    # old but works..
     exportar_melodia_a_midi(mel_final, bpm=60, instrumento=instr)
-    # exportar_melodia_a_midi(
-    #     mel_final, bpm=60, instrumento=instr, numerador=numerador, segunda_voz=True) #experimento v1
-    # exportar_melodia_a_midi(mel_final, bpm=60, instrumento=instr,
-    #                         numerador=numerador, step_div=2, segunda_voz=True)  # experimento v2
     imprimir_melodia(melodia)
 
     midi_a_wav("mensaje.mid", "mensaje.wav",
                "/usr/share/sounds/sf2/FluidR3_GM.sf2")
 
-    # with open("claves.txt", "w") as f:
-    # f.write(f"\n Clave generada: a->{a}, b->{b}, compás->{numerador}\n")
     with open("claves.txt", "w", encoding="utf-8") as f:
         f.write(f"datos: numerador->{numerador}, compases->{compases}\n")
 
-    print("Archivos creados: mensaje.wav y claves.txt")
+    print("Created: mensaje.wav, claves.txt")
     log_dispersion(entrada, melodia, mel_final)
 
-#     #     # buscar las frecuencias
-#     # energia, _ = calcular_energia(audio, sr)
-#     # picos, _  = find_peaks(energia, height=np.max(energia)*0.3, distance=int(0.4/0.01))
-#     # frecs = detectar_frecs(audio, picos, duracion_nota=0.7, tasa_muestreo=sr)
-#     # melodia=obtener_melodia(frecs)
-
-#     # compases_encontrados= buscar_compases(picos, paso=int(0.01*sr), tasa_muestreo=sr, duracion_nota=0.7)
-#     # compases = len(compases_encontrados)
-
-#     msj_final = decode(clave, compases, onsets, frecs, numerador)
-#     print(f"Mensaje decodificado: {msj_final}")
 
 
-def receptor(ruta_claves="claves.txt"):
-    print("- Receptor -")
 
-    ruta_wav = input("escribe la ruta del .wav: ").strip()
-    pw = input("escribe la contraseña: ").strip()
+def receptor(ruta_claves: str = "claves.txt", ruta_wav: Optional[str] = None, pw: Optional[str] = None):
+    print("- Receiver -")
+    if ruta_wav is None:
+        ruta_wav = input("Enter path to .wav file: ").strip()
+    if pw is None:
+        pw = input("Enter password: ").strip()
 
     y, sr, audio = cargar_audio(ruta_wav)
     onsets, frecs = onsets_y_frecs(audio, sr)
@@ -160,98 +141,77 @@ def receptor(ruta_claves="claves.txt"):
     compases = None
 
     if ruta_claves and os.path.exists(ruta_claves):
-        # receptor carga los parametros
         meta = cargar_meta_desde_archivo(ruta_claves)
         if meta:
             numerador, compases = meta
-            print(
-                f"datos tomados de '{ruta_claves}': numerador={numerador}, compases={compases}")
+            print(f"Loaded from '{ruta_claves}': numerator={numerador}, measures={compases}")
         else:
-            print(
-                f"'{ruta_claves}' existe pero no se pudo parsear. Se estimará desde el audio.")
+            print(f"'{ruta_claves}' could not be parsed. Estimating from audio.")
     else:
-        print("No se encontró archivo .txt. estimando  datos...")
+        print("No keys file found. Estimating parameters...")
 
     if numerador is None or compases is None:
-        #  estimar desde audio num y compases si no los da el usuario
         numerador_inf, compases_inf = estimar_metrica(onsets, sr)
         if numerador is None:
             numerador = numerador_inf
         if compases is None:
             compases = compases_inf
-        print(
-            f"parametros estimados: numerador={numerador} y compases={compases}")
+        print(f"Estimated: numerator={numerador}, measures={compases}")
 
     if numerador is None:
-        raise ValueError(
-            "No se pudo estimar el numerador")
+        raise ValueError("Could not estimate numerator")
 
     compases_max = len(onsets) // numerador
     if compases is None or compases > compases_max:
         compases = compases_max
 
     if compases <= 0:
-        raise ValueError(
-            "no hay suficientes onsets :(")
+        raise ValueError("Not enough onsets")
 
-    clave = kdf_from_compases(pw, compases)  # derivo la clave
+    clave = kdf_from_compases(pw, compases)
 
     msj_final = decode(clave, compases, onsets, frecs, numerador)
-    print(f"\nMensaje decodificado: {msj_final}")
+    print(f"\nDecoded message: {msj_final}")
     return msj_final
 
 
 def main():
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--modo', choices=['emisor', 'receptor'])
+    parser.add_argument('--modo', choices=['sender', 'receiver'])
     parser.add_argument('--help', action='store_true')
-    # NEW
-    parser.add_argument(
-        '--wav', help="Ruta del archivo .wav ")
-    parser.add_argument('--claves', default="claves.txt",
-                        help="Ruta de claves.txt")
-    parser.add_argument(
-        '--pw', help="Contraseña para derivar (a,b)")
+    parser.add_argument('--wav', help="Path to .wav file")
+    parser.add_argument('--claves', default="claves.txt", help="Path to claves.txt")
+    parser.add_argument('--pw', help="Password for key derivation (a,b)")
 
-    # NEW
     args = parser.parse_args()
 
     banner()
 
     if args.help:
-        help()
+        print_help()
+        return
 
-    # si se elige el modo directamente:
     if args.modo:
-        if args.modo == 'emisor':
+        if args.modo == 'sender':
             emisor()
-        elif args.modo == 'receptor':
-            # receptor(ruta_wav=args.wav, ruta_claves=args.claves,
-            #          pw=args.pw)
-            receptor(ruta_claves=args.claves)
+        elif args.modo == 'receiver':
+            receptor(ruta_claves=args.claves, ruta_wav=args.wav, pw=args.pw)
         return
 
     while True:
-        modo = input(
-            "\nSelecciona un modo para continuar (emisor/receptor) o 'salir': ").strip().lower()
-
-        if modo == 'emisor':
+        modo = input("\nSelect mode (sender/receiver) or 'exit': ").strip().lower()
+        if modo == 'sender':
             emisor()
             break
-        elif modo == 'receptor':
-            receptor()
+        elif modo == 'receiver':
+            receptor(ruta_claves=args.claves)
             break
-        elif modo == "salir":
-            print("Saliendo de la aplicación...")
+        elif modo == "exit":
+            print("Exiting...")
             sys.exit(0)
         else:
-            print("Entrada no válida. Escribe si eres 'emisor/receptor' o 'salir'. ")
+            print("Invalid input. Enter 'sender', 'receiver', or 'exit'.")
 
 
 if __name__ == "__main__":
     main()
-
-
-#   print("3  - Piano eléctrico")
-#   print("35 - Tuba")
-#   print("42 - Viola")

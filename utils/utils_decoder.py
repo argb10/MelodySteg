@@ -7,13 +7,11 @@ from scipy.io import wavfile
 from utils.utils_coder import FREQS
 from utils.utils_coder import beat_random
 
-# file = wave.open("mensaje.wav", "r")
-
 
 def cargar_audio(ruta_archivo):
     tasa_muestreo, datos = wavfile.read(ruta_archivo)
     y, sr = librosa.load(ruta_archivo, sr=None)
-    print(f"archivo subido con sr: {sr} Hz,\nduracion: {len(y)/sr:.2f} s")
+    print(f"Loaded: sr={sr} Hz, duration={len(y)/sr:.2f} s")
 
     if len(datos.shape) == 2:
         datos = datos[:, 0]
@@ -46,7 +44,7 @@ def frec_a_indx(f, tolerancia=5.0):
 
 
 def inverso(a, m):
-    # buscar el 'i' con el q se codificó la nota original
+    """Modular multiplicative inverse of a mod m."""
     for x in range(1, m):
         if (a * x) % m == 1:
             return x
@@ -66,7 +64,7 @@ def recuperar_msg_con_indx(indx_ordenados):
         grupo = indx_ordenados[i:i+3]  # agrupo en 3
         if len(grupo) == 3:
             c = indices_a_char(*grupo)
-            print(f"grupo {grupo} → '{c}'")
+            print(f"group {grupo} → '{c}'")
             chars.append(c)
 
     return "".join(chars)
@@ -173,71 +171,6 @@ def decode(clave, compases, onsets, frecs_encontradas, numerador):
             idx_msj.append((i_original, idx))
 
     idx_msj.sort(key=lambda x: x[0])
-    indx_ordenados = [idx for (_, idx) in idx_msj]  # solo indx de la frec_msj
+    indx_ordenados = [idx for (_, idx) in idx_msj]
 
     return recuperar_msg_con_indx(indx_ordenados)
-
-
-'''
-def buscar_frecs(audio, picos, duracion_nota, tasa_muestreo):
-    # busca las frec dominantes 
-    samples_nota = int(duracion_nota * tasa_muestreo)
-    frecs_encontradas = []
-
-    for pico in picos:
-        inicio = pico * int(0.01 * tasa_muestreo)
-        fin = inicio + samples_nota
-        if fin > len(audio):
-            continue
-        segmento = audio[inicio:fin]
-        señal = segmento * np.hanning(len(segmento))  # Hann ventana
-        espectro = np.abs(rfft(señal))
-        freqs = rfftfreq(len(señal), 1 / tasa_muestreo)
-        freq_dominante = freqs[np.argmax(espectro)]
-        frecs_encontradas.append(freq_dominante)
-
-    return frecs_encontradas
-
-def obtener_melodia(frecs_encontradas):
-    frecs_filtradas = [] 
-    for f in frecs_encontradas:
-        if abs(f ) > 30:
-            frecs_filtradas.append(f)
-
-    melodia_detectada = []
-
-    for f in frecs_filtradas:
-        idx = frec_a_indx(f) # mapeo los indices con las freqs encontradas
-
-        if idx is not None:
-            melodia_detectada.append(idx)
-
-    return melodia_detectada
-
-# Este bloque detecta el compás estimado por cada nota detectada
-# Basado en su tiempo de aparición en el audio
-
-# duración_nota debe ser la misma que se usó al codificar (0.7 s)
-def buscar_compases(picos, paso, tasa_muestreo, duracion_nota):
-    compases_detectados = []
-    for pico in picos:
-        pico_a_seg = (pico *paso)/tasa_muestreo
-        compas = int(pico_a_seg // duracion_nota)
-        compases_detectados.append(compas)
-    
-    return compases_detectados
-
-
-# print("compases detectados desde los picos : ", compases_detectados)
-'''
-# print("frame rate:", file.getframerate())  # 44100
-# print("sample width:", file.getsampwidth()) # 2
-# print("number of frames:", file.getnframes())
-# print("parametros:", file.getparams())
-# print("numero de canales:", file.getnchannels()) # 2
-
-# duracion = file.getnframes()/ file.getframerate() # duracion audio en seg
-# print("Duracion:", duracion)
-
-# frames = file.readframes(-1)
-# print("muestras:",len(frames))

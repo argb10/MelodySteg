@@ -4,34 +4,17 @@ from math import gcd
 from typing import Tuple
 from hashlib import pbkdf2_hmac
 
-# Am pentatónica de 8 notas para msg
+# 8-note set for message encoding
 FREQS = np.array([220.00, 261.63, 293.66, 329.63,
                  392.00, 440.00, 523.25, 587.33])
 
-# FREQS = np.array([
-#     220.00,  # A3
-#     246.94,  # B3
-#     261.63,  # C4
-#     293.66,  # D4
-#     329.63,  # E4
-#     349.23,  # F4
-#     392.00,  # G4
-#     440.00,  # A4
-# ])
-
-
-# acordes en relativa Cmaj para padding
-ACORDES = {"C":  [261.63, 329.63, 392.00],   # C4, E4, G4
-           "G":  [196.00, 246.94, 293.66],   # G3, B3, D4
-           "Am": [220.00, 261.63, 329.63],   # A3, C4/(523.25 Hz), E4
-           "F":  [174.61, 220.00, 130.81],   # F3, A3 (349.23 Hz), C3
-
+# Chords in C major for padding
+ACORDES = {"C":  [261.63, 329.63, 392.00],
+           "G":  [196.00, 246.94, 293.66],
+           "Am": [220.00, 261.63, 329.63],
+           "F":  [174.61, 220.00, 130.81],
            }
-PROGRESION = [
-    "C", "G", "Am", "F", "C"
-    # "G", # I–V–vi–IV
-    # "Am","F","C","G","Am","F","C","G","Am","F","C","G" #vi-IV-I-V (x3)
-]
+PROGRESION = ["C", "G", "Am", "F", "C"]
 
 
 def kdf(pw, txt):
@@ -104,7 +87,7 @@ def crear_melodia(texto, clave, compases):
 
 
 def mel_con_padding(melodia, compases, clave, numerador):
-    '''se unen melodia y notas de relleno'''
+    """Merge message melody with padding notes."""
     nota_por_compas = {}
     for i, frec, compas in melodia:
         nota_por_compas[compas] = (i, frec)
@@ -155,7 +138,7 @@ def log_dispersion(texto, melodia, m_final):
         if es_msg
     }
 
-    print("LOG DE DISPERSIÓN DE NOTAS:\n")
+    print("NOTE DISPERSION LOG:\n")
     for char_idx, c in enumerate(texto):
         i1, i2, i3 = 3*char_idx, 3*char_idx+1, 3*char_idx+2
         detalles = []

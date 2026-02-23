@@ -17,4 +17,4 @@ def midi_a_wav(nombre_midi="mensaje.mid", nombre_wav="mensaje.wav", soundfont="/
     with open(os.devnull, 'w') as devnull:
         subprocess.run(comando, stdout=devnull, stderr=devnull)
 
-    print(f"Archivo WAV generado: {nombre_wav}")
+    print(f"WAV file written: {nombre_wav}")
